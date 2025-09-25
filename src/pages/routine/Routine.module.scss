@@ -1,0 +1,281 @@
+@import '../../assets/styles/_mixins.module.scss';
+
+$orange-500: #f97316;
+$orange-800: #9a3412;
+$purple-600: #9333ea;
+$purple-900: #581c87;
+$white: #ffffff;
+$gray-600: #4b5563;
+$gray-800: #1f2937;
+$gray-500: #6b7280;
+$blue-300: #93c5fd;
+$blue-600: #2563eb;
+
+.skincare-routine {
+  min-height: 100vh;
+  background: linear-gradient(to bottom right, #f0fdf4, #eff6ff);
+  padding: 2rem;
+
+  .container {
+    max-width: 1400px;
+    margin: 0 auto;
+  }
+
+  .header {
+    text-align: center;
+    margin-bottom: 3rem;
+
+    .title {
+      font-size: 3rem;
+      font-weight: bold;
+      color: var(--dark);
+      margin-bottom: 1rem;
+    }
+
+    .subtitle {
+      font-size: 2rem;
+      color: var(--light-gray);
+      line-height: 1.6;
+      max-width: 800px;
+      margin: 0 auto;
+    }
+  }
+
+  .routine-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(500px, 1fr));
+    gap: 3rem;
+
+    @media (max-width: 768px) {
+      grid-template-columns: 1fr;
+      gap: 2rem;
+    }
+  }
+
+  .routine-card {
+    border-radius: 2rem;
+    padding: 2.5rem;
+    @include card-shadow;
+    @include transition;
+    min-height: 500px;
+
+    &:hover {
+      transform: translateY(-8px);
+    }
+
+    &.morning-card {
+      background: linear-gradient(to bottom right, #fed7aa, #fde047);
+    }
+
+    &.evening-card {
+      background: linear-gradient(to bottom right, #c4b5fd, #818cf8);
+    }
+
+    .card-header {
+      @include flex-start;
+      margin-bottom: 2rem;
+
+      .icon-wrapper {
+        width: 3rem;
+        height: 3rem;
+        border-radius: 50%;
+        @include flex-center;
+        margin-right: 1rem;
+
+        &.morning-icon {
+          background: $orange-500;
+        }
+
+        &.evening-icon {
+          background: $purple-600;
+        }
+
+        span {
+          color: $white;
+          font-size: 1.5rem;
+        }
+      }
+
+      .card-title {
+        font-size: 2rem;
+        font-weight: bold;
+        margin: 0;
+
+        .morning-card & {
+          color: $orange-800;
+        }
+
+        .evening-card & {
+          color: $purple-900;
+        }
+      }
+    }
+
+    .steps-container {
+      display: flex;
+      flex-direction: column;
+      gap: 1.5rem;
+    }
+
+    .step-item {
+      background: rgba(255, 255, 255, 0.8);
+      border-radius: 1.5rem;
+      padding: 2rem;
+      @include flex-start;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+      @include transition;
+
+      &:hover {
+        background: rgba(255, 255, 255, 0.9);
+        transform: translateX(8px);
+      }
+
+      .step-number {
+        width: 4rem;
+        height: 4rem;
+        border-radius: 50%;
+        @include flex-center;
+        color: $white;
+        font-weight: bold;
+        font-size: 1.5rem;
+        margin-right: 1.5rem;
+        box-shadow: 0 6px 12px rgba(0, 0, 0, 0.25);
+
+        &.morning-step {
+          background: $orange-500;
+        }
+
+        &.evening-step {
+          background: $purple-600;
+        }
+      }
+
+      .step-content {
+        flex: 1;
+
+        .step-title {
+          font-weight: 600;
+          color: $gray-800;
+          font-size: 1.8rem;
+          margin: 0 0 0.5rem 0;
+        }
+
+        .step-description {
+          color: $gray-600;
+          font-size: 1.5rem;
+          margin: 0;
+          line-height: 1.5;
+        }
+      }
+    }
+  }
+}
+
+@media (max-width: 1200px) {
+  .skincare-routine {
+    .routine-grid {
+      grid-template-columns: repeat(auto-fit, minmax(450px, 1fr));
+      gap: 2.5rem;
+    }
+  }
+}
+
+@media (max-width: 768px) {
+  .skincare-routine {
+    padding: 1.5rem;
+
+    .header {
+      .title {
+        font-size: 2.5rem;
+      }
+
+      .subtitle {
+        font-size: 1.25rem;
+      }
+    }
+
+    .routine-grid {
+      grid-template-columns: 1fr;
+      gap: 2rem;
+    }
+
+    .routine-card {
+      padding: 2rem;
+      min-height: 500px;
+
+      .card-header {
+        .card-title {
+          font-size: 1.75rem;
+        }
+
+        .icon-wrapper {
+          width: 2.5rem;
+          height: 2.5rem;
+
+          span {
+            font-size: 1.25rem;
+          }
+        }
+      }
+
+      .step-item {
+        padding: 1.25rem;
+
+        .step-number {
+          width: 3.5rem;
+          height: 3.5rem;
+          font-size: 1.25rem;
+          margin-right: 1.25rem;
+        }
+
+        .step-content {
+          .step-title {
+            font-size: 1.25rem;
+          }
+
+          .step-description {
+            font-size: 0.9rem;
+          }
+        }
+      }
+    }
+  }
+}
+
+@media (max-width: 480px) {
+  .skincare-routine {
+    padding: 1rem;
+
+    .routine-card {
+      padding: 1.5rem;
+      min-height: 450px;
+
+      .card-header {
+        .card-title {
+          font-size: 1.5rem;
+        }
+      }
+
+      .step-item {
+        padding: 1rem;
+
+        .step-number {
+          width: 3rem;
+          height: 3rem;
+          font-size: 1.125rem;
+          margin-right: 1rem;
+        }
+
+        .step-content {
+          .step-title {
+            font-size: 1.125rem;
+          }
+
+          .step-description {
+            font-size: 0.875rem;
+          }
+        }
+      }
+    }
+  }
+}
