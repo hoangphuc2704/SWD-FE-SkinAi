@@ -1,5 +1,5 @@
 /* Header.module.scss */
-@import '../../assets/styles/_mixins.module.scss';
+@use '../../assets/styles/mixins' as *;
 
 .header {
   position: fixed;
