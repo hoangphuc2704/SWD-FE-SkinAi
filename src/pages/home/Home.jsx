@@ -3,10 +3,13 @@ import classNames from 'classnames/bind';
 import styles from './Home.module.scss';
 import Button from '../../components/button/Button';
 import images from '../../assets/images';
-
+import { Link } from 'react-router-dom';
 const cx = classNames.bind(styles);
 
 function Home() {
+  const handleCardClick = (cardType) => {
+    console.log(`Clicked on ${cardType} card`);
+  };
   return (
     <div className={cx('home')}>
       {/* Background decorative elements */}
@@ -31,11 +34,11 @@ function Home() {
             tiến để phân tích loại da và đưa ra lời khuyên chuyên nghiệp.
           </div>
           <div className={cx('home_button')}>
-            <Button large className={cx('btn1')}>
-              Bắt đầu tư vấn
-              <br />
-              AI
-            </Button>
+            <Link to="/chatai">
+              <Button large className={cx('btn1')} onClick={() => handleCardClick('chat')}>
+                Bắt đầu tư vấn AI
+              </Button>
+            </Link>
             <Button large className={cx('btn2')}>
               Tìm hiểu
               <br />

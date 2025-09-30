@@ -108,7 +108,7 @@ function Footer() {
             <div className={cx('contact-info')}>
               <div className={cx('contact-item')}>
                 <i className="fas fa-map-marker-alt"></i>
-                <span>123 Đường ABC, Quận 1, TP.HCM</span>
+                <span>Đại Học FPT</span>
               </div>
               <div className={cx('contact-item')}>
                 <i className="fas fa-phone"></i>
@@ -116,7 +116,7 @@ function Footer() {
               </div>
               <div className={cx('contact-item')}>
                 <i className="fas fa-envelope"></i>
-                <span>contact@example.com</span>
+                <span>SWD@fpt.edu.vn</span>
               </div>
             </div>
 
@@ -140,7 +140,7 @@ function Footer() {
         {/* Copyright */}
         <div className={cx('bottom')}>
           <div className={cx('copyright')}>
-            <p>&copy; 2024 Your Company. Tất cả quyền được bảo lưu.</p>
+            <p>&copy; 2025 FPT Company. Tất cả quyền được bảo lưu.</p>
           </div>
           <div className={cx('legal-links')}>
             <Link to="/privacy" className={cx('legal-link')}>

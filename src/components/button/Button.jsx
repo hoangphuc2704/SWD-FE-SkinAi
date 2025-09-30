@@ -42,6 +42,9 @@ function Button({
   } else if (href) {
     props.href = href;
     Comp = 'a';
+  } else {
+    Comp = 'button';
+    props.type = 'button';
   }
 
   const classes = cx('wrapper', {

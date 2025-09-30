@@ -1,23 +1,18 @@
-// Header.jsx
 import React, { useState } from 'react';
 import classNames from 'classnames/bind';
 import styles from './Header.module.scss';
 import images from '../../assets/images';
-import { Link } from 'react-router-dom';
 import Button from '../button/Button';
+import { Link as ScrollLink } from 'react-scroll';
+import { Link as RouterLink } from 'react-router-dom';
 
 const cx = classNames.bind(styles);
 
 function Header() {
   const [isOpen, setIsOpen] = useState(false);
 
-  const openMenu = () => {
-    setIsOpen(!isOpen);
-  };
-
-  const closeMenu = () => {
-    setIsOpen(false);
-  };
+  const openMenu = () => setIsOpen(!isOpen);
+  const closeMenu = () => setIsOpen(false);
 
   return (
     <div className={cx('header')}>
@@ -33,30 +28,75 @@ function Header() {
       <div className={cx('header_nav', { active: isOpen })}>
         <ul className={cx('nav_menu')}>
           <li className={cx('nav_item')}>
-            <Link to="/" className={cx('nav_link')} onClick={closeMenu}>
+            <ScrollLink
+              to="home"
+              smooth={true}
+              duration={500}
+              className={cx('nav_link')}
+              onClick={closeMenu}
+            >
               Trang Chủ
-            </Link>
+            </ScrollLink>
           </li>
           <li className={cx('nav_item')}>
-            <Link to="/tu-van-ai" className={cx('nav_link')} onClick={closeMenu}>
+            <ScrollLink
+              to="aipage"
+              smooth={true}
+              duration={500}
+              className={cx('nav_link')}
+              onClick={closeMenu}
+            >
               Tư Vấn AI
-            </Link>
+            </ScrollLink>
           </li>
           <li className={cx('nav_item')}>
-            <Link to="/quy-trinh" className={cx('nav_link')} onClick={closeMenu}>
+            <ScrollLink
+              to="routine"
+              smooth={true}
+              duration={500}
+              className={cx('nav_link')}
+              onClick={closeMenu}
+            >
               Quy Trình
-            </Link>
+            </ScrollLink>
           </li>
           <li className={cx('nav_item')}>
-            <Link to="/ve-chung-toi" className={cx('nav_link')} onClick={closeMenu}>
+            <ScrollLink
+              to="aboutus"
+              smooth={true}
+              duration={500}
+              className={cx('nav_link')}
+              onClick={closeMenu}
+            >
               Về Chúng Tôi
-            </Link>
+            </ScrollLink>
           </li>
+          <li className={cx('nav_item')}>
+            <ScrollLink
+              to="buyproducts"
+              smooth={true}
+              duration={500}
+              className={cx('nav_link')}
+              onClick={closeMenu}
+            >
+              Gói Mua Hàng
+            </ScrollLink>
+          </li>
+          {/* <li className={cx('nav_item')}>
+            <RouterLink to="/chatai" className={cx('nav_link')} onClick={closeMenu}>
+              Chat AI
+            </RouterLink>
+          </li> */}
         </ul>
       </div>
 
       <div className={cx('header_button')}>
-        <Button small>Bắt Đầu</Button>
+        <Button to="/login" small>
+          Login
+        </Button>
+        <Button to="/admin" small>
+          Admin
+        </Button>
       </div>
 
       {/* Overlay để đóng menu khi click bên ngoài */}

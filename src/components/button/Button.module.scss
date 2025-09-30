@@ -77,12 +77,6 @@
   }
 }
 
-.text {
-  &:hover {
-    text-decoration: underline;
-  }
-}
-
 // Button sizes
 .small {
   min-width: 100px;
@@ -93,4 +87,14 @@
 .large {
   padding: 14px 16px;
   min-width: 140px;
+}
+.text {
+  border: none;
+  min-width: auto;
+  padding: 0;
+  cursor: pointer;
+  background: transparent;
+  &:hover {
+    text-decoration: underline;
+  }
 }

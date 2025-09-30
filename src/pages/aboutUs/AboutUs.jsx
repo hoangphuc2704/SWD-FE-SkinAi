@@ -50,14 +50,6 @@ function AboutUs() {
                 chuyên môn trong lĩnh vực chăm sóc da, mang đến giải pháp tư vấn thông minh và cá
                 nhân hóa cho mọi người.
               </p>
-              <div className={cx('hero-buttons')}>
-                <Button primary large>
-                  Bắt Đầu Tư Vấn
-                </Button>
-                <Button outline large>
-                  Tìm Hiểu Thêm
-                </Button>
-              </div>
             </div>
             <div className={cx('hero-image')}>
               <div className={cx('hero-illustration')}>
@@ -158,24 +150,6 @@ function AboutUs() {
                 <h3>Nhận Lộ Trình Cá Nhân</h3>
                 <p>Được cung cấp lộ trình chăm sóc da chi tiết với sản phẩm và tips phù hợp</p>
               </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* CTA Section */}
-      <section className={cx('cta')}>
-        <div className={cx('container')}>
-          <div className={cx('cta-content')}>
-            <h2 className={cx('cta-title')}>Sẵn Sàng Cho Làn Da Khỏe Mạnh?</h2>
-            <p className={cx('cta-description')}>
-              Hãy để AI chuyên nghiệp tư vấn và tạo lộ trình chăm sóc da hoàn hảo cho bạn ngay hôm
-              nay!
-            </p>
-            <div className={cx('cta-buttons')}>
-              <Button primary large>
-                Bắt Đầu Ngay - Miễn Phí
-              </Button>
             </div>
           </div>
         </div>

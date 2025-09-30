@@ -2,6 +2,7 @@ import React from 'react';
 import classNames from 'classnames/bind';
 import styles from './AIPage.module.scss';
 import Button from '../../components/button/Button';
+import { Link } from 'react-router-dom';
 const cx = classNames.bind(styles);
 
 function AIPage() {
@@ -43,9 +44,11 @@ function AIPage() {
               <p className={cx('card-description')}>
                 Trò chuyện trực tiếp với AI để nhận lời khuyên cá nhân hóa về chăm sóc da
               </p>
-              <Button small className={cx('card-button')} onClick={() => handleCardClick('chat')}>
-                Bắt đầu chat
-              </Button>
+              <Link to="/chatai">
+                <Button small className={cx('card-button')} onClick={() => handleCardClick('chat')}>
+                  Bắt đầu chat
+                </Button>
+              </Link>
             </div>
           </div>
 
