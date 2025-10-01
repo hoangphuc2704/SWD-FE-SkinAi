@@ -13,7 +13,7 @@ function Login() {
   return (
     <div className={cx('wrapper')}>
       <div className={cx('login_title')}>
-        <img src={images.logo} alt="Nature Skin AI" className={cx('logo')} />
+        <img src={images.logoNew1} alt="Nature Skin AI" className={cx('logo')} />
         <h1>Đăng Nhập</h1>
         <h3>Chào mừng bạn đến với NatureSkin AI</h3>
         <Button to="/">

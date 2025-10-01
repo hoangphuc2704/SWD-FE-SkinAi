@@ -17,7 +17,7 @@ function Header() {
   return (
     <div className={cx('header')}>
       <div className={cx('header_logo')}>
-        <img src={images.logo} alt="Nature Skin AI" />
+        <img src={images.logoNew} alt="Nature Skin AI" />
         <span>Nature Skin AI</span>
       </div>
 

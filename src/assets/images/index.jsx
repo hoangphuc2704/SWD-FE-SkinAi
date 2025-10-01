@@ -7,6 +7,9 @@ import crr from '../images/crr.png';
 import crrr from '../images/crrr.png';
 import star from '../images/star.png';
 import google from '../images/google.png';
+import logoNew from '../images/logoNew.png';
+import logoNew1 from '../images/logoNew1.png';
+
 const images = {
   logo,
   backroundHome,
@@ -17,6 +20,8 @@ const images = {
   crrr,
   star,
   google,
+  logoNew,
+  logoNew1,
 };
 
 export default images;
