@@ -10,7 +10,7 @@ import ChatAi from './pages/user/chatAi/ChatAi';
 import Login from './pages/user/login/Login';
 import Admin from './pages/admin/Admin';
 import BuyProducts from './pages/user/buyProduc/BuyProducts';
-
+import Profile from './pages/user/profile/Profile';
 function App() {
   return (
     <>
@@ -46,6 +46,7 @@ function App() {
         <Route path="/chatai" element={<ChatAi />} />
         <Route path="/login" element={<Login />} />
         <Route path="/admin" element={<Admin />} />
+        <Route path="/profile" element={<Profile />} />
       </Routes>
     </>
   );

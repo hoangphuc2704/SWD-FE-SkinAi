@@ -37,15 +37,17 @@ function GoogleButton(props, ref) {
       const res = await authApi.loginWithGoogle(loginData);
 
       console.log('Backend response:', res);
+      console.log('Response data detail:', res.data);
 
       if (!res.data.success) {
         throw new Error(res.data.message || 'Đăng nhập thất bại');
       }
 
       const userData = res.data.data;
+      console.log('User data detail:', userData);
 
-      if (userData.token) {
-        localStorage.setItem('accessToken', userData.token);
+      if (userData.accessToken) {
+        localStorage.setItem('accessToken', userData.accessToken);
       }
 
       const user = {
