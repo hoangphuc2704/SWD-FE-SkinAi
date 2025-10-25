@@ -2,7 +2,7 @@ import React from 'react';
 import classNames from 'classnames/bind';
 import styles from './ChatAi.module.scss';
 import { Link, useNavigate } from 'react-router-dom';
-import Button from '../../components/button/Button';
+import Button from '../../../components/button/Button';
 const cx = classNames.bind(styles);
 
 function ChatAi() {

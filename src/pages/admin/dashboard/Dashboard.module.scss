@@ -1,0 +1,85 @@
+@use '../../../assets/styles/global' as *;
+@use '../../../assets/styles/mixins' as *;
+
+.header {
+  margin-bottom: 2rem;
+
+  h1 {
+    font-size: 2rem;
+    font-weight: 700;
+    color: $text-primary;
+    margin-bottom: 0.5rem;
+  }
+
+  p {
+    color: $text-secondary;
+    font-size: 1rem;
+  }
+}
+
+// Stats
+.statsGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 1.5rem;
+}
+
+.statCard {
+  background: linear-gradient(135deg, $bg-card 0%, #f0fdf4 100%);
+  padding: 1.5rem;
+  border-radius: 12px;
+  box-shadow: $shadow-sm;
+  border: 1px solid #bbf7d0;
+  transition: $transition;
+
+  &:hover {
+    transform: translateY(-2px);
+    border-color: $primary-color;
+  }
+}
+
+.statValue {
+  font-size: 2rem;
+  font-weight: 700;
+  color: $primary-dark;
+}
+
+.statLabel {
+  color: $text-secondary;
+  font-size: 0.875rem;
+}
+
+.statChange {
+  font-size: 0.875rem;
+  font-weight: 600;
+
+  &.positive {
+    color: $primary-color;
+    background: rgba(34, 197, 94, 0.1);
+  }
+
+  &.negative {
+    color: $danger-color;
+    background: rgba(239, 68, 68, 0.1);
+  }
+}
+
+// Charts
+.chartsSection {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+  gap: 1.5rem;
+}
+
+.chartCard {
+  background: $bg-card;
+  padding: 1.5rem;
+  border-radius: 12px;
+  box-shadow: $shadow-sm;
+
+  h3 {
+    font-size: 1.125rem;
+    font-weight: 600;
+    color: $text-primary;
+  }
+}

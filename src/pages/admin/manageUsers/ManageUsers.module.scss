@@ -1,0 +1,17 @@
+@use '../../../assets/styles/global' as *;
+@use '../../../assets/styles/mixins' as *;
+
+.userTable {
+  background: $bg-card;
+  border-radius: 12px;
+  box-shadow: $shadow-sm;
+  border: 1px solid $border-color;
+}
+
+.roleBadge {
+  @extend .badge;
+  &.admin {
+    background: rgba(245, 158, 11, 0.1);
+    color: $warning-color;
+  }
+}
