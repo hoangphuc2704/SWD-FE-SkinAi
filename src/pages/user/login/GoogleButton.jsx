@@ -15,41 +15,27 @@ function GoogleButton(props, ref) {
       if (!response?.credential) {
         throw new Error('No credential received from Google');
       }
-
       const decoded = jwtDecode(response.credential);
       console.log('Decoded Google token:', decoded);
       const googleId = decoded.sub;
       const email = decoded.email;
       const fullName = decoded.name;
-
       if (!googleId || !email || !fullName) {
         throw new Error('Missing required fields from Google response');
       }
-
       const loginData = {
         googleId: googleId,
         email: email,
         fullName: fullName,
       };
-
-      console.log('Attempting to login with data:', loginData);
-
       const res = await authApi.loginWithGoogle(loginData);
-
-      console.log('Backend response:', res);
-      console.log('Response data detail:', res.data);
-
       if (!res.data.success) {
         throw new Error(res.data.message || 'Đăng nhập thất bại');
       }
-
       const userData = res.data.data;
-      console.log('User data detail:', userData);
-
       if (userData.accessToken) {
         localStorage.setItem('accessToken', userData.accessToken);
       }
-
       const user = {
         userId: userData.userId,
         fullName: userData.fullName,

@@ -3,7 +3,7 @@ import axiosClient from '../services/axiosClient';
 const authApi = {
   loginWithGoogle: async (data) => {
     try {
-      console.log('Sending Google login data:', data); // Log the data being sent
+      console.log('Sending Google login data:', data);
       const response = await axiosClient.post('/api/auth/providers/google/token', data);
       return response;
     } catch (error) {

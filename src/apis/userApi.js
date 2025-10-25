@@ -17,6 +17,16 @@ export const getProfile = async () => {
     throw error;
   }
 };
+export const updateProfile = async () => {
+  try {
+    const response = await axiosClient.put('/api/users/id');
+    return response.data;
+  } catch (error) {
+    console.log(error);
+    throw error;
+  }
+};
+
 export const getUsers = async (pageNumber = 1, pageSize = 10) => {
   try {
     const response = await axiosClient.get('/api/users', {
