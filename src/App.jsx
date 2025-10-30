@@ -1,4 +1,4 @@
-import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
+import { BrowserRouter as Router, Route, Routes, Navigate } from 'react-router-dom';
 import '../src/assets/styles/_global.scss';
 import Header from './components/header/Header';
 import Home from './pages/user/home/Home';
@@ -13,42 +13,42 @@ import BuyProducts from './pages/user/buyProduc/BuyProducts';
 import Profile from './pages/user/profile/Profile';
 function App() {
   return (
-    <>
-      <Routes>
-        <Route
-          path="/"
-          element={
-            <>
-              <Header />
-              <main>
-                <section id="home">
-                  <Home />
-                </section>
-                <section id="aipage">
-                  <AIPage />
-                </section>
-                <section id="routine">
-                  <Routine />
-                </section>
-                <section id="aboutus">
-                  <AboutUs />
-                </section>
-                <section id="buyproducts">
-                  <BuyProducts />
-                </section>
-              </main>
-              <Footer />
-            </>
-          }
-        />
-      </Routes>
-      <Routes>
-        <Route path="/chatai" element={<ChatAi />} />
-        <Route path="/login" element={<Login />} />
-        <Route path="/admin" element={<Admin />} />
-        <Route path="/profile" element={<Profile />} />
-      </Routes>
-    </>
+    <Routes>
+      <Route
+        path="/"
+        element={
+          <>
+            <Header />
+            <main>
+              <section id="home">
+                <Home />
+              </section>
+              <section id="aipage">
+                <AIPage />
+              </section>
+              <section id="routine">
+                <Routine />
+              </section>
+              <section id="aboutus">
+                <AboutUs />
+              </section>
+              <section id="buyproducts">
+                <BuyProducts />
+              </section>
+            </main>
+            <Footer />
+          </>
+        }
+      />
+
+      <Route path="/chatai" element={<ChatAi />} />
+      <Route path="/login" element={<Login />} />
+      <Route path="/admin" element={<Admin />} />
+      <Route path="/profile" element={<Profile />} />
+
+      {/* fallback: redirect unknown routes to home */}
+      <Route path="*" element={<Navigate to="/" replace />} />
+    </Routes>
   );
 }
 

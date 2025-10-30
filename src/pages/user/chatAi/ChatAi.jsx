@@ -1,89 +1,123 @@
-import React from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import classNames from 'classnames/bind';
 import styles from './ChatAi.module.scss';
-import { Link, useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import Button from '../../../components/button/Button';
+
+// Import custom hooks
+import { useChatSession } from './hooks/useChatSession';
+import { useImageAnalysis } from './hooks/useImageAnalysis';
+import { useRoutineCreation } from './hooks/useRoutineCreation';
+
+// Import components
+import ChatMessages from './components/ChatMessages';
+import ChatInput from './components/ChatInput';
+import ImagePreview from './components/ImagePreview';
+import ConsultPanel from './components/ConsultPanel';
+
 const cx = classNames.bind(styles);
 
 function ChatAi() {
   const navigate = useNavigate();
+  const [inputMessage, setInputMessage] = useState('');
+  const messagesEndRef = useRef(null);
+
+  // Custom hooks
+  const {
+    user,
+    chatSession,
+    messages,
+    loading,
+    selectedProblem,
+    selectedSkinType,
+    setAiAnalysisId,
+    sendMessage,
+    selectProblem,
+    selectSkinType,
+    addMessage,
+  } = useChatSession();
+
+  const { imagePreview, analyzing, handleImageSelect, removeImage, analyzeImage } =
+    useImageAnalysis({
+      user,
+      chatSession,
+      selectedProblem,
+      selectedSkinType,
+      setAiAnalysisId,
+      addMessage,
+    });
+
+  const { creating, createSkincareRoutine } = useRoutineCreation({
+    user,
+    chatSession,
+    addMessage,
+  });
+
+  // Scroll to bottom khi có tin nhắn mới
+  const scrollToBottom = () => {
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  };
+
+  useEffect(() => {
+    scrollToBottom();
+  }, [messages]);
+
+  // Handlers
   const handleGoBack = () => {
     navigate(-1);
   };
+
+  const handleSendMessage = () => {
+    if (inputMessage.trim()) {
+      sendMessage(inputMessage);
+      setInputMessage('');
+    }
+  };
+
+  const handleCreateRoutine = () => {
+    createSkincareRoutine(selectedProblem, selectedSkinType);
+  };
+
   return (
     <div className={cx('wrapper')}>
-      {/* Cột bên trái (chat box) */}
+      {/* Back button */}
       <Button onClick={handleGoBack} className={cx('backBtn')}>
-        <i class="fa-solid fa-left-long"></i>
+        <i className="fa-solid fa-left-long"></i>
       </Button>
-      <div className={cx('chatLeft')}>
-        <div className={cx('chatMessage')}>
-          Xin chào! Tôi là AI tư vấn chăm sóc da. Bạn có câu hỏi gì về da không?
-        </div>
 
-        <div className={cx('chatInputBox')}>
-          <input type="text" placeholder="Nhập câu hỏi của bạn..." className={cx('chatInput')} />
-          <button className={cx('sendBtn')}>
-            <i className="fa-solid fa-paper-plane"></i>
-          </button>
-        </div>
+      {/* Cột bên trái (chat box) */}
+      <div className={cx('chatLeft')}>
+        <ChatMessages
+          messages={messages}
+          loading={loading || analyzing}
+          messagesEndRef={messagesEndRef}
+        />
+
+        <ImagePreview
+          imagePreview={imagePreview}
+          onRemove={removeImage}
+          onAnalyze={analyzeImage}
+          analyzing={analyzing}
+        />
+
+        <ChatInput
+          value={inputMessage}
+          onChange={(e) => setInputMessage(e.target.value)}
+          onSend={handleSendMessage}
+          onImageSelect={handleImageSelect}
+          disabled={loading || analyzing}
+        />
       </div>
 
       {/* Cột bên phải (tính năng & lựa chọn) */}
-      <div className={cx('chatRight')}>
-        {/* 3 ô tính năng */}
-        <div className={cx('featureCards')}>
-          <div className={cx('featureCard')}>
-            <h4>Phân tích da</h4>
-            <p>
-              AI phân tích tình trạng da của bạn và đưa ra lời khuyên cá nhân hóa phù hợp với từng
-              loại da.
-            </p>
-          </div>
-          <div className={cx('featureCard')}>
-            <h4>Tư vấn sản phẩm</h4>
-            <p>Gợi ý các sản phẩm chăm sóc da phù hợp với ngân sách và nhu cầu cụ thể của bạn.</p>
-          </div>
-          <div className={cx('featureCard')}>
-            <h4>Lộ trình chăm sóc</h4>
-            <p>
-              Xây dựng quy trình chăm sóc da hàng ngày với các bước chi tiết và thời gian thực hiện.
-            </p>
-          </div>
-        </div>
-
-        {/* Bắt đầu tư vấn */}
-        <div className={cx('consultBox')}>
-          <h3>Bắt đầu tư vấn ngay</h3>
-          <div className={cx('consultContent')}>
-            <div className={cx('problems')}>
-              <h5>Các vấn đề phổ biến:</h5>
-              <button>Mụn trứng cá và mụn đầu đen</button>
-              <button>Da khô và bong tróc</button>
-              <button>Da nhờn và lỗ chân lông to</button>
-              <button>Nám và tàn nhang</button>
-              <button>Lão hóa và nếp nhăn</button>
-            </div>
-
-            <div className={cx('skinTypes')}>
-              <h5>Loại da của bạn:</h5>
-              <button>Da khô</button>
-              <button>Da nhờn</button>
-              <button>Da hỗn hợp</button>
-              <button>Da nhạy cảm</button>
-              <button>Không chắc chắn</button>
-            </div>
-          </div>
-        </div>
-
-        <div className={cx('readyBox')}>
-          <h4>Bạn đã sẵn sàng?</h4>
-          <p>
-            Hãy bắt đầu cuộc trò chuyện với AI tư vấn chăm sóc da bên trái để nhận được lời khuyên
-            cá nhân hóa.
-          </p>
-        </div>
-      </div>
+      <ConsultPanel
+        selectedProblem={selectedProblem}
+        selectedSkinType={selectedSkinType}
+        onProblemSelect={selectProblem}
+        onSkinTypeSelect={selectSkinType}
+        onCreateRoutine={handleCreateRoutine}
+        creating={creating}
+      />
     </div>
   );
 }
