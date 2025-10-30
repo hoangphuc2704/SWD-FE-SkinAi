@@ -1,4 +1,4 @@
-import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
+import { BrowserRouter as Router, Route, Routes, Navigate } from 'react-router-dom';
 import '../src/assets/styles/_global.scss';
 import Header from './components/header/Header';
 import Home from './pages/user/home/Home';
@@ -11,6 +11,7 @@ import Login from './pages/user/login/Login';
 import Admin from './pages/admin/Admin';
 import BuyProducts from './pages/user/buyProduc/BuyProducts';
 import Profile from './pages/user/profile/Profile';
+
 function App() {
   return (
     <Routes>
