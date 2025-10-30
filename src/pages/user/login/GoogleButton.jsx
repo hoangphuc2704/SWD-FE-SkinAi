@@ -48,11 +48,13 @@ function GoogleButton(props, ref) {
       localStorage.setItem('user', JSON.stringify(user));
       message.success('Đăng nhập thành công');
 
-      if (user.roleName?.toLowerCase() === 'admin') {
-        window.location.href = '/admin';
-      } else {
-        window.location.href = '/';
-      }
+      setTimeout(() => {
+        if (user.roleName?.toLowerCase() === 'admin') {
+          window.location.href = '/admin';
+        } else {
+          window.location.href = '/';
+        }
+      }, 3000);
     } catch (err) {
       console.error('Google login error:', err);
       message.error(err.message || 'Đăng nhập thất bại!');
