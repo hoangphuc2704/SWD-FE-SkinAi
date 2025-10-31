@@ -5,6 +5,7 @@ import Button from '../../components/button/Button';
 import Dashboard from './dashboard/Dashboard';
 import ManagePackages from './managePackages/ManagePackages';
 import ManageUsers from './manageUsers/ManageUsers';
+import ManageRoutine from './manageRoutine/ManageRoutine';
 const cx = classNames.bind(styles);
 
 function Admin() {
@@ -127,6 +128,7 @@ function Admin() {
     { id: 'dashboard', icon: '📊', label: 'Dashboard' },
     { id: 'users', icon: '👥', label: 'Người dùng' },
     { id: 'packages', icon: '🎫', label: 'Gói dịch vụ' },
+    { id: 'routine', icon: 'X', label: 'Routine' },
     { id: 'analytics', icon: '📈', label: 'Thống kê' },
     { id: 'settings', icon: '⚙️', label: 'Cài đặt' },
   ];
@@ -155,6 +157,8 @@ function Admin() {
             setCurrentPagePackages={setCurrentPagePackages}
           />
         );
+      case 'routine':
+        return <ManageRoutine />;
       default:
         return null;
     }

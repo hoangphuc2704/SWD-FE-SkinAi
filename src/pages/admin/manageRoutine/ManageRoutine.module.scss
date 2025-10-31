@@ -1,0 +1,148 @@
+.container {
+  padding: 16px;
+}
+
+.header {
+  margin-bottom: 16px;
+}
+
+.error {
+  background: #fee;
+  color: #c00;
+  padding: 8px 12px;
+  border: 1px solid #f99;
+  border-radius: 6px;
+  margin-bottom: 12px;
+}
+
+.loading {
+  background: #f8f8ff;
+  color: #333;
+  padding: 8px 12px;
+  border: 1px dashed #ccd;
+  border-radius: 6px;
+  margin-bottom: 12px;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
+.panel {
+  background: #fff;
+  border: 1px solid #eee;
+  border-radius: 10px;
+  padding: 16px;
+  min-height: 300px;
+}
+
+.list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+.item {
+  border: 1px solid #eee;
+  border-radius: 8px;
+  padding: 10px 12px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.item.active {
+  border-color: #8ab4f8;
+  background: #f0f6ff;
+}
+
+.itemTitle {
+  font-weight: 600;
+}
+
+.itemMeta {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.badge {
+  background: #eef6ff;
+  color: #1f5fbf;
+  border: 1px solid #cfe2ff;
+  padding: 2px 8px;
+  border-radius: 999px;
+  font-size: 12px;
+}
+
+.chip {
+  background: #f7f7f7;
+  border: 1px solid #eee;
+  border-radius: 999px;
+  padding: 2px 8px;
+  font-size: 12px;
+}
+
+.formCard {
+  border-top: 1px dashed #eee;
+  padding-top: 12px;
+}
+
+.formRow {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-bottom: 10px;
+}
+
+.formRow.inline {
+  flex-direction: row;
+  gap: 12px;
+}
+
+.formRow input,
+.formRow select {
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  padding: 8px;
+}
+
+.actions {
+  display: flex;
+  gap: 8px;
+}
+
+.btn {
+  border: 1px solid #ddd;
+  background: #fff;
+  padding: 6px 10px;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.btn.primary {
+  background: #1f5fbf;
+  color: #fff;
+  border-color: #1f5fbf;
+}
+
+.btn.danger {
+  background: #d9534f;
+  color: white;
+  border-color: #d9534f;
+}
+
+.btn.sm {
+  padding: 4px 8px;
+  font-size: 12px;
+}
+
+@media (max-width: 900px) {
+  .grid {
+    grid-template-columns: 1fr;
+  }
+}

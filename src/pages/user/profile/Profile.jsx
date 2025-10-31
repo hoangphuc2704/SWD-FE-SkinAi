@@ -15,8 +15,15 @@ function Profile() {
   useEffect(() => {
     getProfile()
       .then((data) => {
-        setProfile(data.data);
-        setEditedProfile(data.data);
+        const value = data?.data ?? data;
+        if (!value) {
+          setProfile(null);
+          setEditedProfile(null);
+          return;
+        }
+        const normalized = value.id ? value : { ...value, id: value.userId };
+        setProfile(normalized);
+        setEditedProfile(normalized);
         setLoading(false);
       })
       .catch(() => setLoading(false));
@@ -45,10 +52,26 @@ function Profile() {
     setError(null);
 
     try {
-      const response = await updateProfile(editedProfile);
-      setProfile(response.data);
+      const id = profile?.id ?? profile?.userId;
+      if (!id) {
+        throw new Error('Missing user id');
+      }
+
+      const payload = {
+        fullName: editedProfile.fullName,
+        email: editedProfile.email,
+        skinType: editedProfile.skinType,
+        dateOfBirth: editedProfile.dateOfBirth,
+        roleId: editedProfile.roleId,
+        status: editedProfile.status,
+      };
+
+      const response = await updateProfile(id, payload);
+      const value = response?.data ?? response;
+      const normalized = value?.id ? value : { ...value, id: value?.userId };
+      setProfile(normalized);
       setIsEditing(false);
-    } catch (err) {
+    } catch {
       setError('Không thể cập nhật thông tin. Vui lòng thử lại.');
     } finally {
       setSaving(false);

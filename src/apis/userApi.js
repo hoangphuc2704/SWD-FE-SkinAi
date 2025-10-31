@@ -18,9 +18,9 @@ export const getProfile = async () => {
   }
 };
 
-export const updateProfile = async () => {
+export const updateProfile = async (id, userData) => {
   try {
-    const response = await axiosClient.put('/api/users/id');
+    const response = await axiosClient.put(`/api/users/${id}`, userData);
     return response.data;
   } catch (error) {
     console.log(error);

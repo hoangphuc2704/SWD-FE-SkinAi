@@ -228,9 +228,9 @@ function Header() {
             <Button to="/login" small>
               Login
             </Button>
-            <Button to="/admin" small>
+            {/* <Button to="/admin" small>
               Admin
-            </Button>
+            </Button> */}
           </>
         )}
       </div>
