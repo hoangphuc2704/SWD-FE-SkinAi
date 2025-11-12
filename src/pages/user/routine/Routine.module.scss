@@ -71,6 +71,10 @@ $blue-600: #2563eb;
       background: linear-gradient(to bottom right, #c4b5fd, #818cf8);
     }
 
+    &.weekly-card {
+      background: linear-gradient(to bottom right, #bbf7d0, #86efac);
+    }
+
     .card-header {
       @include flex-start;
       margin-bottom: 2rem;
@@ -88,6 +92,10 @@ $blue-600: #2563eb;
 
         &.evening-icon {
           background: $purple-600;
+        }
+
+        &.weekly-icon {
+          background: $blue-600;
         }
 
         span {
@@ -147,6 +155,10 @@ $blue-600: #2563eb;
 
         &.evening-step {
           background: $purple-600;
+        }
+
+        &.weekly-step {
+          background: $blue-600;
         }
       }
 

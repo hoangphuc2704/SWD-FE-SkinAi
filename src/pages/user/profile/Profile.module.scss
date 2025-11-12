@@ -1,16 +1,32 @@
 @import '../../../assets/styles/global'; // Import các biến màu global
 
+.profileWrapper {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  width: 100%;
+  padding: 2rem;
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  overflow-y: auto;
+  background-color: $bg-primary;
+}
+
 .profile {
-  max-width: 800px;
-  margin: 3rem auto;
-  padding: 3rem;
+  max-width: 900px;
+  width: 100%;
+  padding: 4rem 3.5rem;
   background: $white;
-  border-radius: 12px;
-  box-shadow: $shadow-md;
+  border-radius: 16px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
   transition: $transition;
 
   &:hover {
-    box-shadow: $shadow-lg;
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.12);
   }
 }
 
@@ -18,17 +34,36 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 2.5rem;
-  padding-bottom: 1.5rem;
+  margin-bottom: 3rem;
+  padding-bottom: 2rem;
   border-bottom: 3px solid $primary-light;
+  position: relative;
+
+  &::after {
+    content: '';
+    position: absolute;
+    bottom: -3px;
+    left: 0;
+    width: 100px;
+    height: 3px;
+    background: $primary-color;
+    border-radius: 3px;
+  }
 
   h2 {
-    font-size: 2.8rem;
+    font-size: 3rem;
     font-weight: 600;
     color: $primary-color;
     font-family: 'Poppins', sans-serif;
     margin: 0;
+    letter-spacing: -0.5px;
   }
+}
+
+.header-left {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
 }
 
 .btn-group {
@@ -36,23 +71,41 @@
   gap: 1rem;
 }
 
+.btn-back,
 .btn-edit,
 .btn-save,
 .btn-cancel {
   display: flex;
   align-items: center;
-  gap: 0.5rem;
-  padding: 1rem 2rem;
-  border-radius: 8px;
-  font-size: 1.4rem;
-  font-weight: 500;
+  gap: 0.6rem;
+  padding: 1.1rem 2.2rem;
+  border-radius: 10px;
+  font-size: 1.45rem;
+  font-weight: 600;
   cursor: pointer;
-  transition: $transition;
+  transition: all 0.3s ease;
   border: none;
+  font-family: 'Poppins', sans-serif;
 
   svg {
     width: 18px;
     height: 18px;
+    transition: transform 0.3s ease;
+  }
+
+  &:hover svg {
+    transform: scale(1.1);
+  }
+}
+
+.btn-back {
+  background: $primary-color;
+  color: $white;
+
+  &:hover {
+    background: $primary-hover;
+    transform: translateY(-2px);
+    box-shadow: $shadow-md;
   }
 }
 
@@ -101,35 +154,63 @@
 .profile-content {
   display: flex;
   flex-direction: column;
-  gap: 1.5rem;
+  gap: 1.8rem;
 }
 
 .field {
   display: flex;
   align-items: center;
-  padding: 1.5rem;
+  padding: 1.8rem 2rem;
   background: $bg-card;
-  border-radius: 8px;
-  border-left: 4px solid $primary-color;
-  transition: $transition;
+  border-radius: 12px;
+  border-left: 5px solid $primary-color;
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+
+  &::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0;
+    height: 100%;
+    width: 0;
+    background: linear-gradient(90deg, rgba($primary-color, 0.05) 0%, transparent 100%);
+    transition: width 0.3s ease;
+    pointer-events: none;
+    z-index: 0;
+  }
 
   &:hover {
     background: lighten($bg-card, 2%);
+    transform: translateX(4px);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+
+    &::before {
+      width: 100%;
+    }
   }
 
   label {
     font-weight: 600;
     color: $primary-dark;
-    min-width: 150px;
-    font-size: 1.5rem;
+    min-width: 160px;
+    font-size: 1.55rem;
+    font-family: 'Poppins', sans-serif;
+    position: relative;
+    z-index: 1;
   }
 
   span {
     color: $text-primary;
-    font-size: 1.5rem;
+    font-size: 1.55rem;
+    line-height: 1.6;
+    position: relative;
+    z-index: 1;
 
     &.readonly {
-      opacity: 0.8;
+      opacity: 0.75;
+      font-style: italic;
     }
   }
 }
@@ -137,32 +218,52 @@
 .input,
 select.input {
   flex: 1;
-  padding: 1rem 1.5rem;
+  padding: 1.1rem 1.6rem;
   border: 2px solid $border-color;
-  border-radius: 6px;
-  font-size: 1.5rem;
+  border-radius: 8px;
+  font-size: 1.55rem;
   color: $text-primary;
   background: $white;
-  transition: $transition;
+  transition: all 0.3s ease;
+  font-family: inherit;
+  position: relative;
+  z-index: 1;
 
   &:focus {
+    outline: none;
     border-color: $primary-color;
-    box-shadow: 0 0 0 3px rgba($primary-color, 0.1);
+    box-shadow: 0 0 0 4px rgba($primary-color, 0.1);
+    transform: translateY(-1px);
   }
 
-  &:hover {
+  &:hover:not(:focus) {
     border-color: $primary-light;
+    background: rgba($primary-color, 0.02);
   }
 }
 
 .error-message {
-  padding: 1.2rem;
+  padding: 1.4rem 1.8rem;
   background: lighten($danger-color, 45%);
   color: $danger-color;
-  border-radius: 8px;
-  margin-bottom: 1.5rem;
-  font-size: 1.4rem;
-  border-left: 4px solid $danger-color;
+  border-radius: 10px;
+  margin-bottom: 2rem;
+  font-size: 1.45rem;
+  border-left: 5px solid $danger-color;
+  font-weight: 500;
+  box-shadow: 0 2px 8px rgba($danger-color, 0.1);
+  animation: slideIn 0.3s ease;
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 .loading {
@@ -209,9 +310,13 @@ select.input {
 
 // Responsive
 @media (max-width: 768px) {
+  .profileWrapper {
+    padding: 1rem;
+    min-height: auto;
+  }
+
   .profile {
-    margin: 2rem 1.5rem;
-    padding: 2rem;
+    padding: 2.5rem 2rem;
   }
 
   .header {
@@ -222,6 +327,13 @@ select.input {
     h2 {
       font-size: 2.4rem;
     }
+  }
+
+  .header-left {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 1rem;
+    width: 100%;
   }
 
   .btn-group {
@@ -249,8 +361,11 @@ select.input {
 }
 
 @media (max-width: 480px) {
+  .profileWrapper {
+    padding: 0.5rem;
+  }
+
   .profile {
-    margin: 1rem;
     padding: 1.5rem;
   }
 

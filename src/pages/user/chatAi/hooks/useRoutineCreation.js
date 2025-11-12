@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { createRoutine } from '../../../../apis/routineApi';
 import { createRoutineInstance } from '../../../../apis/routineInstanceApi';
 import { createChatMessage } from '../../../../apis/chatApi';
@@ -8,6 +9,7 @@ import { createChatMessage } from '../../../../apis/chatApi';
  */
 export const useRoutineCreation = ({ user, chatSession, addMessage }) => {
   const [creating, setCreating] = useState(false);
+  const navigate = useNavigate();
 
   const createSkincareRoutine = async (selectedProblem, selectedSkinType) => {
     if (!user || !selectedProblem || !selectedSkinType) {
@@ -56,7 +58,8 @@ Chúc bạn có làn da khỏe đẹp! 💚`,
         content: successMsg.content,
       });
 
-      alert('Đã tạo lộ trình chăm sóc da thành công! Xem tại trang Routine.');
+      // Điều hướng sang trang Routine và chọn đúng lộ trình vừa tạo
+      navigate('/routine', { state: { routineId: routineData.data.id } });
     } catch (error) {
       console.error('Error creating routine:', error);
       alert('Có lỗi khi tạo lộ trình. Vui lòng thử lại!');
@@ -70,4 +73,3 @@ Chúc bạn có làn da khỏe đẹp! 💚`,
     createSkincareRoutine,
   };
 };
-

@@ -1,7 +1,8 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { getProfile } from '../../../../apis/userApi';
 import { createChatSession, createChatMessage } from '../../../../apis/chatApi';
+import { submitConsultation } from '../../../../apis/consultationApi';
 import { createAIResponse } from '../../../../apis/aiApi';
 import { createUserSymptom } from '../../../../apis/symptomApi';
 
@@ -17,10 +18,14 @@ export const useChatSession = () => {
   const [selectedProblem, setSelectedProblem] = useState('');
   const [selectedSkinType, setSelectedSkinType] = useState('');
   const [aiAnalysisId, setAiAnalysisId] = useState(null);
+  const initializedRef = useRef(false);
 
   // Khởi tạo chat session
   useEffect(() => {
     const initChat = async () => {
+      // Prevent double initialization in React Strict Mode (DEV)
+      if (initializedRef.current) return;
+      initializedRef.current = true;
       try {
         const profileData = await getProfile();
         console.log('User profile:', profileData);
@@ -52,6 +57,8 @@ export const useChatSession = () => {
             title: 'Tư vấn chăm sóc da',
           });
         }
+
+        // Không gọi consultation ở init; chỉ hiển thị welcome. Consultation sẽ được gọi khi user gửi câu hỏi/nhấn phân tích ảnh.
       } catch (error) {
         console.error('Error initializing chat:', error);
         if (error.response?.status === 401) {
@@ -69,6 +76,7 @@ export const useChatSession = () => {
 
     const userMessage = messageText.trim();
     setLoading(true);
+    const isMockSession = chatSession?.id?.startsWith('mock-session-');
 
     try {
       // Thêm tin nhắn user
@@ -79,77 +87,92 @@ export const useChatSession = () => {
       };
       setMessages((prev) => [...prev, userMsg]);
 
-      // Lưu vào database
-      await createChatMessage(chatSession.id, {
-        role: 'user',
-        content: userMessage,
-      });
-
-      // Giả lập phản hồi AI
-      setTimeout(async () => {
-        let aiResponse = '';
-
-        // Kiểm tra nếu user hỏi về lộ trình
-        if (
-          userMessage.toLowerCase().includes('lộ trình') ||
-          userMessage.toLowerCase().includes('routine') ||
-          userMessage.toLowerCase().includes('có')
-        ) {
-          aiResponse = `Tuyệt vời! Tôi sẽ tạo lộ trình chăm sóc da phù hợp cho bạn.
-
-📋 **Lộ trình chăm sóc da cho ${selectedSkinType || 'da của bạn'}:**
-
-**Buổi sáng:**
-1. Làm sạch da với sữa rửa mặt nhẹ nhàng
-2. Toner cân bằng pH
-3. Serum Vitamin C (chống oxy hóa)
-4. Kem dưỡng ẩm
-5. Kem chống nắng SPF 50+
-
-**Buổi tối:**
-1. Tẩy trang (nếu có makeup)
-2. Sữa rửa mặt làm sạch sâu
-3. Toner
-4. Serum điều trị (${selectedProblem || 'phù hợp với vấn đề da'})
-5. Kem dưỡng đêm
-
-Bạn có muốn tôi lưu lộ trình này vào hệ thống để theo dõi tiến trình không?`;
-        } else {
-          aiResponse = `Cảm ơn bạn đã chia sẻ! Dựa trên thông tin:
-- Loại da: ${selectedSkinType || 'Chưa xác định'}
-- Vấn đề: ${selectedProblem || 'Chưa xác định'}
-
-Tôi khuyên bạn nên:
-1. Chụp ảnh da để tôi phân tích chính xác hơn
-2. Chọn loại da và vấn đề da bên phải
-3. Sau đó tôi sẽ tạo lộ trình chăm sóc da chi tiết cho bạn
-
-Bạn có câu hỏi gì khác không?`;
-        }
-
-        const assistantMsg = {
-          role: 'assistant',
-          content: aiResponse,
-          timestamp: new Date().toISOString(),
-        };
-        setMessages((prev) => [...prev, assistantMsg]);
-
-        // Lưu AI response
-        if (aiAnalysisId) {
-          await createAIResponse({
-            analysisId: aiAnalysisId,
-            responseText: aiResponse,
-            confidence: 0.9,
+      // Lưu vào database (nếu session không phải mock)
+      if (!isMockSession) {
+        try {
+          await createChatMessage(chatSession.id, {
+            role: 'user',
+            content: userMessage,
           });
+        } catch (e) {
+          console.warn('Skip saving user message (chat session not found or API error):', e);
         }
+      }
 
-        await createChatMessage(chatSession.id, {
-          role: 'assistant',
-          content: aiResponse,
+      // Gọi BE Consultation để phân tích câu hỏi (GenerateRoutine=false)
+      try {
+        const result = await submitConsultation({
+          text: userMessage,
+          generateRoutine: true,
         });
 
-        setLoading(false);
-      }, 1500);
+        const d = result?.data || {};
+        const advice = d.advice || {};
+        const summary = advice.summary || 'Mình đã tiếp nhận câu hỏi của bạn.';
+
+        // Lưu lại analysisId nếu có
+        if (d.analysisId) setAiAnalysisId(d.analysisId);
+
+        // Nếu BE đã tạo lộ trình thì hỏi người dùng có muốn chuyển để xem không
+        if (d.routineGenerated && d.routineId) {
+          setMessages((prev) => [
+            ...prev,
+            {
+              role: 'assistant',
+              content: `Tóm tắt tư vấn: ${summary}\n\nMình vừa tạo lộ trình chăm sóc da cho bạn. Bạn có muốn xem lộ trình ngay bây giờ không?`,
+              actions: [
+                { id: 'open-routine', label: 'Xem lộ trình' },
+                { id: 'decline-open', label: 'Để sau' },
+              ],
+              meta: { routineId: d.routineId, userId: (user && user.id) || undefined },
+              timestamp: new Date().toISOString(),
+            },
+          ]);
+        } else {
+          // Trường hợp hiếm khi BE chưa tạo kịp, vẫn hiển thị tóm tắt
+          const assistantMsg = {
+            role: 'assistant',
+            content: `Tóm tắt tư vấn: ${summary}`,
+            timestamp: new Date().toISOString(),
+          };
+          setMessages((prev) => [...prev, assistantMsg]);
+        }
+
+        // Lưu AI response (best-effort)
+        if (aiAnalysisId || d.analysisId) {
+          try {
+            await createAIResponse({
+              analysisId: d.analysisId || aiAnalysisId,
+              responseText: summary,
+              confidence: d.confidence || 0.9,
+            });
+          } catch (e) {
+            console.warn('Skip saving AI response (AI API error):', e);
+          }
+        }
+
+        if (!isMockSession) {
+          try {
+            await createChatMessage(chatSession.id, {
+              role: 'assistant',
+              content: summary,
+            });
+          } catch (e) {
+            console.warn('Skip saving assistant message (chat session not found or API error):', e);
+          }
+        }
+
+        // KHÔNG tự động chuyển trang. Việc mở lộ trình sẽ do người dùng bấm nút "Xem lộ trình".
+      } catch {
+        // Nếu consultation lỗi, vẫn tiếp tục UI mượt mà
+        const fallback = `Cảm ơn bạn! Mình đang cập nhật hệ thống, bạn có thể tiếp tục chụp ảnh để phân tích hoặc chọn vấn đề/loại da ở panel bên phải.`;
+        setMessages((prev) => [
+          ...prev,
+          { role: 'assistant', content: fallback, timestamp: new Date().toISOString() },
+        ]);
+      }
+
+      setLoading(false);
     } catch (error) {
       console.error('Error sending message:', error);
       setLoading(false);
@@ -161,6 +184,7 @@ Bạn có câu hỏi gì khác không?`;
     setSelectedProblem(problem);
 
     if (!chatSession) return;
+    const isMockSession = chatSession?.id?.startsWith('mock-session-');
 
     // Gửi tin nhắn tự động
     const msg = {
@@ -170,10 +194,16 @@ Bạn có câu hỏi gì khác không?`;
     };
     setMessages((prev) => [...prev, msg]);
 
-    await createChatMessage(chatSession.id, {
-      role: 'user',
-      content: `Vấn đề da của tôi: ${problem}`,
-    });
+    if (!isMockSession) {
+      try {
+        await createChatMessage(chatSession.id, {
+          role: 'user',
+          content: `Vấn đề da của tôi: ${problem}`,
+        });
+      } catch (e) {
+        console.warn('Skip saving problem selection message:', e);
+      }
+    }
 
     // Lưu symptom
     try {
@@ -201,10 +231,16 @@ Bạn có câu hỏi gì khác không?`;
       };
       setMessages((prev) => [...prev, assistantMsg]);
 
-      await createChatMessage(chatSession.id, {
-        role: 'assistant',
-        content: response,
-      });
+      if (!isMockSession) {
+        try {
+          await createChatMessage(chatSession.id, {
+            role: 'assistant',
+            content: response,
+          });
+        } catch (e) {
+          console.warn('Skip saving assistant response (problem):', e);
+        }
+      }
     }, 1000);
   };
 
@@ -213,6 +249,7 @@ Bạn có câu hỏi gì khác không?`;
     setSelectedSkinType(skinType);
 
     if (!chatSession) return;
+    const isMockSession = chatSession?.id?.startsWith('mock-session-');
 
     const msg = {
       role: 'user',
@@ -221,10 +258,16 @@ Bạn có câu hỏi gì khác không?`;
     };
     setMessages((prev) => [...prev, msg]);
 
-    await createChatMessage(chatSession.id, {
-      role: 'user',
-      content: `Loại da của tôi: ${skinType}`,
-    });
+    if (!isMockSession) {
+      try {
+        await createChatMessage(chatSession.id, {
+          role: 'user',
+          content: `Loại da của tôi: ${skinType}`,
+        });
+      } catch (e) {
+        console.warn('Skip saving skin type message:', e);
+      }
+    }
 
     // Phản hồi AI
     setTimeout(async () => {
@@ -241,10 +284,16 @@ Bạn có câu hỏi gì khác không?`;
       };
       setMessages((prev) => [...prev, assistantMsg]);
 
-      await createChatMessage(chatSession.id, {
-        role: 'assistant',
-        content: response,
-      });
+      if (!isMockSession) {
+        try {
+          await createChatMessage(chatSession.id, {
+            role: 'assistant',
+            content: response,
+          });
+        } catch (e) {
+          console.warn('Skip saving assistant response (skin type):', e);
+        }
+      }
     }, 1000);
   };
 
@@ -269,4 +318,3 @@ Bạn có câu hỏi gì khác không?`;
     addMessage,
   };
 };
-

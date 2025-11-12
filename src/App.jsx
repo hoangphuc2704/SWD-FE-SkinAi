@@ -1,4 +1,5 @@
-import { BrowserRouter as Router, Route, Routes, Navigate } from 'react-router-dom';
+import { BrowserRouter as Router, Route, Routes, Navigate, useLocation } from 'react-router-dom';
+import { useEffect } from 'react';
 import '../src/assets/styles/_global.scss';
 import Header from './components/header/Header';
 import Home from './pages/user/home/Home';
@@ -12,6 +13,21 @@ import Admin from './pages/admin/Admin';
 import BuyProducts from './pages/user/buyProduc/BuyProducts';
 import Profile from './pages/user/profile/Profile';
 
+function ScrollToSection() {
+  const location = useLocation();
+  useEffect(() => {
+    const target = location.state?.scrollTo;
+    if (target) {
+      // Delay to ensure DOM sections are rendered
+      setTimeout(() => {
+        const el = document.getElementById(target);
+        if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }, 0);
+    }
+  }, [location]);
+  return null;
+}
+
 function App() {
   return (
     <Routes>
@@ -19,6 +35,7 @@ function App() {
         path="/"
         element={
           <>
+            <ScrollToSection />
             <Header />
             <main>
               <section id="home">
@@ -36,6 +53,19 @@ function App() {
               <section id="buyproducts">
                 <BuyProducts />
               </section>
+            </main>
+            <Footer />
+          </>
+        }
+      />
+      {/* Dedicated routine route for deep linking from chat */}
+      <Route
+        path="/routine"
+        element={
+          <>
+            <Header />
+            <main>
+              <Routine />
             </main>
             <Footer />
           </>

@@ -58,6 +58,11 @@ function ManageRoutine() {
     [routines, selectedRoutineId]
   );
 
+  // Basic UUID validator (8-4-4-4-12 hex)
+  const isUUID = (v) =>
+    typeof v === 'string' &&
+    /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/.test(v);
+
   // Helper to resolve userId from localStorage or token
   const resolveUserId = () => {
     // direct storage keys first
@@ -161,11 +166,29 @@ function ManageRoutine() {
         setError('Không tìm thấy User ID từ token. Vui lòng đăng nhập lại.');
         return;
       }
+      // Validate UUID format for userId if backend expects UUID
+      if (!isUUID(routineForm.userId)) {
+        setLoading(false);
+        setError('User ID không hợp lệ (không đúng định dạng UUID). Vui lòng chọn/nhập lại.');
+        return;
+      }
+      // Optional fields: if provided, must be UUID
+      if (routineForm.analysisId && !isUUID(routineForm.analysisId)) {
+        setLoading(false);
+        setError('Analysis ID không hợp lệ (phải là UUID)');
+        return;
+      }
+      if (routineForm.parentRoutineId && !isUUID(routineForm.parentRoutineId)) {
+        setLoading(false);
+        setError('Parent Routine ID không hợp lệ (phải là UUID)');
+        return;
+      }
+      // Only include keys that have values to avoid sending nulls
       const payload = {
-        userId: routineForm.userId || undefined,
-        analysisId: routineForm.analysisId || null,
-        description: routineForm.description || undefined,
-        parentRoutineId: routineForm.parentRoutineId || null,
+        userId: routineForm.userId,
+        ...(routineForm.analysisId ? { analysisId: routineForm.analysisId } : {}),
+        ...(routineForm.description ? { description: routineForm.description } : {}),
+        ...(routineForm.parentRoutineId ? { parentRoutineId: routineForm.parentRoutineId } : {}),
         status: routineForm.status || 'active',
       };
       const created = await createRoutine(payload);

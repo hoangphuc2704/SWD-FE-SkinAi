@@ -1,13 +1,12 @@
 import { useState } from 'react';
 import { uploadImageToCloudinary } from '../../../../services/upLoadService';
-import { createAIAnalysis, createAIResponse } from '../../../../apis/aiApi';
 import { createChatMessage } from '../../../../apis/chatApi';
+import { submitConsultation } from '../../../../apis/consultationApi';
 
 /**
  * Custom hook để xử lý upload và phân tích ảnh da
  */
 export const useImageAnalysis = ({
-  user,
   chatSession,
   selectedProblem,
   selectedSkinType,
@@ -41,18 +40,14 @@ export const useImageAnalysis = ({
     if (!selectedImage || !chatSession) return;
 
     setAnalyzing(true);
+    const isMockSession = chatSession?.id?.startsWith('mock-session-');
     try {
       // Upload ảnh lên Cloudinary
       const uploadResult = await uploadImageToCloudinary(selectedImage, 'skin-analysis');
       const imageUrl = uploadResult.secure_url;
 
-      // Tạo AI Analysis record
-      const analysisData = await createAIAnalysis({
-        userId: user.id,
-        imageUrl: imageUrl,
-        analysisType: 'skin_condition',
-      });
-      setAiAnalysisId(analysisData.data.id);
+      // Gọi consultation với ImageUrl để phân tích (GenerateRoutine=false)
+      let analysisId = null;
 
       // Thêm tin nhắn user gửi ảnh
       const userMsg = {
@@ -63,58 +58,81 @@ export const useImageAnalysis = ({
       };
       addMessage(userMsg);
 
-      // Lưu tin nhắn vào database
-      await createChatMessage(chatSession.id, {
-        role: 'user',
-        content: 'Đây là ảnh da của tôi',
-        imageUrl: imageUrl,
-      });
+      // Lưu tin nhắn vào database (nếu không mock)
+      if (!isMockSession) {
+        try {
+          await createChatMessage(chatSession.id, {
+            role: 'user',
+            content: 'Đây là ảnh da của tôi',
+            imageUrl: imageUrl,
+          });
+        } catch (e) {
+          console.warn('Skip saving image user message:', e);
+        }
+      }
 
-      // Giả lập phản hồi AI (thực tế sẽ gọi API AI thật)
-      setTimeout(async () => {
-        const aiResponse = `Tôi đã phân tích ảnh da của bạn. Dựa trên hình ảnh, tôi nhận thấy:
+      try {
+        const result = await submitConsultation({
+          text: `Phân tích ảnh da${selectedProblem ? `, vấn đề: ${selectedProblem}` : ''}${
+            selectedSkinType ? `, loại da: ${selectedSkinType}` : ''
+          }`,
+          imageUrl,
+          generateRoutine: true,
+        });
+        const d = result?.data || {};
+        if (d.analysisId) {
+          analysisId = d.analysisId;
+          setAiAnalysisId(analysisId);
+        }
 
-🔍 **Tình trạng da:**
-- Loại da: ${selectedSkinType || 'Hỗn hợp'}
-- Vấn đề chính: ${selectedProblem || 'Cần thêm thông tin'}
-- Độ ẩm: Trung bình
-- Tình trạng lỗ chân lông: Hơi to ở vùng chữ T
+        const summary = d?.advice?.summary || 'Mình đã phân tích ảnh của bạn.';
+        if (d.routineGenerated && d.routineId) {
+          addMessage({
+            role: 'assistant',
+            content: `${summary}\n\nMình vừa tạo lộ trình chăm sóc da cho bạn. Bạn có muốn xem lộ trình ngay bây giờ không?`,
+            actions: [
+              { id: 'open-routine', label: 'Xem lộ trình' },
+              { id: 'decline-open', label: 'Để sau' },
+            ],
+            meta: { routineId: d.routineId },
+            timestamp: new Date().toISOString(),
+          });
+        } else {
+          addMessage({
+            role: 'assistant',
+            content: summary,
+            timestamp: new Date().toISOString(),
+          });
+        }
 
-💡 **Khuyến nghị:**
-- Cần làm sạch da đều đặn 2 lần/ngày
-- Sử dụng toner cân bằng pH
-- Dưỡng ẩm phù hợp với loại da
-- Chống nắng SPF 50+ hàng ngày
+        if (!isMockSession) {
+          try {
+            await createChatMessage(chatSession.id, {
+              role: 'assistant',
+              content: summary,
+            });
+          } catch (e) {
+            console.warn('Skip saving assistant image analysis message:', e);
+          }
+        }
 
-Bạn có muốn tôi tạo lộ trình chăm sóc da chi tiết không?`;
-
-        const assistantMsg = {
+        // KHÔNG tự động chuyển trang sau phân tích ảnh.
+      } catch {
+        addMessage({
           role: 'assistant',
-          content: aiResponse,
+          content:
+            'Hiện chưa phân tích được ảnh. Bạn có thể thử lại hoặc tiếp tục cung cấp thông tin để tôi tư vấn.',
           timestamp: new Date().toISOString(),
-        };
-        addMessage(assistantMsg);
-
-        // Lưu AI response
-        await createAIResponse({
-          analysisId: analysisData.data.id,
-          responseText: aiResponse,
-          confidence: 0.85,
         });
-
-        await createChatMessage(chatSession.id, {
-          role: 'assistant',
-          content: aiResponse,
-        });
-
+      } finally {
         setAnalyzing(false);
-      }, 2000);
+      }
 
       // Reset image
       removeImage();
     } catch (error) {
       console.error('Error analyzing image:', error);
-      alert('Có lỗi khi phân tích ảnh. Vui lòng thử lại!');
+      // Vẫn kết thúc trạng thái phân tích để UI không bị kẹt
       setAnalyzing(false);
     }
   };
@@ -128,4 +146,3 @@ Bạn có muốn tôi tạo lộ trình chăm sóc da chi tiết không?`;
     analyzeImage,
   };
 };
-

@@ -3,6 +3,8 @@ import classNames from 'classnames/bind';
 import styles from './ChatAi.module.scss';
 import { useNavigate } from 'react-router-dom';
 import Button from '../../../components/button/Button';
+// import { getProfile } from '../../../apis/userApi';
+import { getRoutinesByUserId, getRoutineById } from '../../../apis/routineApi';
 
 // Import custom hooks
 import { useChatSession } from './hooks/useChatSession';
@@ -39,7 +41,6 @@ function ChatAi() {
 
   const { imagePreview, analyzing, handleImageSelect, removeImage, analyzeImage } =
     useImageAnalysis({
-      user,
       chatSession,
       selectedProblem,
       selectedSkinType,
@@ -78,6 +79,41 @@ function ChatAi() {
     createSkincareRoutine(selectedProblem, selectedSkinType);
   };
 
+  // Handle action buttons inside messages (e.g., create routine decision)
+  const handleMessageAction = async (actionId, message) => {
+    // Hỗ trợ id mới 'open-routine' và tương thích ngược với 'create-routine'
+    if (actionId === 'open-routine' || actionId === 'create-routine') {
+      const preferredRoutineId = message?.meta?.routineId;
+      const preferredUserId = message?.meta?.userId || user?.id;
+
+      // Gọi API theo yêu cầu trước khi điều hướng (không gọi /me)
+      if (preferredUserId) {
+        try {
+          await getRoutinesByUserId(preferredUserId);
+        } catch (e) {
+          console.warn('GET /api/routines/user failed:', e?.message || e);
+        }
+      }
+      if (preferredRoutineId) {
+        try {
+          await getRoutineById(preferredRoutineId);
+        } catch (e) {
+          console.warn('GET /api/routines/{id} failed:', e?.message || e);
+        }
+      }
+
+      // Điều hướng đến trang Routine và để Routine.jsx gọi GET /api/routine-steps/routine/{routineId}
+      navigate('/routine', { state: { routineId: preferredRoutineId, userId: preferredUserId } });
+    }
+    if (actionId === 'decline-open' || actionId === 'decline-create') {
+      addMessage({
+        role: 'assistant',
+        content: 'Không sao, bạn có thể tiếp tục trò chuyện hoặc tải ảnh để tôi phân tích nhé!',
+        timestamp: new Date().toISOString(),
+      });
+    }
+  };
+
   return (
     <div className={cx('wrapper')}>
       {/* Back button */}
@@ -91,6 +127,7 @@ function ChatAi() {
           messages={messages}
           loading={loading || analyzing}
           messagesEndRef={messagesEndRef}
+          onAction={handleMessageAction}
         />
 
         <ImagePreview

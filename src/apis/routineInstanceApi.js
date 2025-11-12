@@ -20,6 +20,17 @@ export const getRoutineInstancesByUserId = async (userId) => {
   }
 };
 
+// GET /api/routine-instances/routine/{routineId}
+export const getRoutineInstancesByRoutineId = async (routineId) => {
+  try {
+    const response = await axiosClient.get(`/api/routine-instances/routine/${routineId}`);
+    return response.data;
+  } catch (error) {
+    console.error('Error fetching routine instances by routine ID:', error);
+    throw error;
+  }
+};
+
 export const getRoutineInstanceById = async (instanceId) => {
   try {
     const response = await axiosClient.get(`/api/routine-instances/${instanceId}`);

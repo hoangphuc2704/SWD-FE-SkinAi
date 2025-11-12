@@ -22,6 +22,28 @@ export const getFeedbacksByUserId = async (userId) => {
   }
 };
 
+// Spec: GET /api/feedbacks/routine/{routineId}
+export const getFeedbacksByRoutineId = async (routineId) => {
+  try {
+    const response = await axiosClient.get(`/api/feedbacks/routine/${routineId}`);
+    return response.data;
+  } catch (error) {
+    console.error('Error fetching feedbacks by routine ID:', error);
+    throw error;
+  }
+};
+
+// Spec: GET /api/feedbacks/step/{stepId}
+export const getFeedbacksByStepId = async (stepId) => {
+  try {
+    const response = await axiosClient.get(`/api/feedbacks/step/${stepId}`);
+    return response.data;
+  } catch (error) {
+    console.error('Error fetching feedbacks by step ID:', error);
+    throw error;
+  }
+};
+
 // 🔹 Get all feedbacks (Admin only)
 export const getAllFeedbacks = async () => {
   try {
@@ -65,4 +87,3 @@ export const deleteFeedback = async (id) => {
     throw error;
   }
 };
-

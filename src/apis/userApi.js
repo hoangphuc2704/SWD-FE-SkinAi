@@ -18,9 +18,31 @@ export const getProfile = async () => {
   }
 };
 
+// Get specific user by ID (Admin)
+export const getUserById = async (id) => {
+  try {
+    const response = await axiosClient.get(`/api/users/${id}`);
+    return response.data;
+  } catch (error) {
+    console.log(error);
+    throw error;
+  }
+};
+
 export const updateProfile = async (id, userData) => {
   try {
-    const response = await axiosClient.put(`/api/users/${id}`, userData);
+    const response = await axiosClient.put(`/api/users/${id}/profile`, userData);
+    return response.data;
+  } catch (error) {
+    console.log(error);
+    throw error;
+  }
+};
+
+// Update current logged-in user's profile (self-service)
+export const updateMyProfile = async (userData) => {
+  try {
+    const response = await axiosClient.put('/api/users/me', userData);
     return response.data;
   } catch (error) {
     console.log(error);

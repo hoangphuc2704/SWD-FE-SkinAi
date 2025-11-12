@@ -25,3 +25,7 @@ export * as aiApi from './aiApi';
 export * as ruleApi from './ruleApi';
 export * as medicalDocumentApi from './medicalDocumentApi';
 export * as documentChunkApi from './documentChunkApi';
+export * as medicalDocumentAssetApi from './medicalDocumentAssetApi';
+export * as mediaApi from './mediaApi';
+export * as ragApi from './ragApi';
+export * as consultationApi from './consultationApi';

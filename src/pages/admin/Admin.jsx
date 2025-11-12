@@ -6,6 +6,8 @@ import Dashboard from './dashboard/Dashboard';
 import ManagePackages from './managePackages/ManagePackages';
 import ManageUsers from './manageUsers/ManageUsers';
 import ManageRoutine from './manageRoutine/ManageRoutine';
+import ManageMedicalDocuments from './manageDocuments/ManageMedicalDocuments';
+import ManageDocumentChunks from './manageDocuments/ManageDocumentChunks';
 const cx = classNames.bind(styles);
 
 function Admin() {
@@ -129,6 +131,8 @@ function Admin() {
     { id: 'users', icon: '👥', label: 'Người dùng' },
     { id: 'packages', icon: '🎫', label: 'Gói dịch vụ' },
     { id: 'routine', icon: 'X', label: 'Routine' },
+    { id: 'medicalDocs', icon: '📚', label: 'Tài liệu y khoa' },
+    { id: 'docChunks', icon: '🧩', label: 'Document Chunks' },
     { id: 'analytics', icon: '📈', label: 'Thống kê' },
     { id: 'settings', icon: '⚙️', label: 'Cài đặt' },
   ];
@@ -159,6 +163,10 @@ function Admin() {
         );
       case 'routine':
         return <ManageRoutine />;
+      case 'medicalDocs':
+        return <ManageMedicalDocuments />;
+      case 'docChunks':
+        return <ManageDocumentChunks />;
       default:
         return null;
     }

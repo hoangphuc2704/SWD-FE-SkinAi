@@ -3,7 +3,12 @@ import axiosClient from '../services/axiosClient';
 export const getRoutinesByUserId = async (userId) => {
   try {
     const response = await axiosClient.get(`/api/routines/user/${userId}`);
-    return response.data;
+    // Normalize shape: some BE returns { data: { items: [...] }}
+    const d = response.data;
+    if (d && d.data && Array.isArray(d.data.items)) {
+      return { ...d, data: d.data.items };
+    }
+    return d;
   } catch (error) {
     console.error('Error fetching routines by user ID:', error);
     throw error;
