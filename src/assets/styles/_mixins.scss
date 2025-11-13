@@ -1,23 +1,55 @@
-@mixin flex-center {
-  display: flex;
-  align-items: center;
-}
+// ================================
+// 🧩 MIXINS (Reusable snippets)
+// ================================
 
+// Flex utilities
 @mixin flex-center {
   display: flex;
   align-items: center;
   justify-content: center;
 }
 
+@mixin flex-between {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
 @mixin flex-start {
   display: flex;
   align-items: center;
+  justify-content: flex-start;
 }
 
+// Shadows
 @mixin card-shadow {
   box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
 }
 
+@mixin soft-shadow {
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+}
+
+// Transitions
 @mixin transition {
   transition: all 0.3s ease;
+}
+
+// Responsive breakpoints
+@mixin mobile {
+  @media (max-width: 768px) {
+    @content;
+  }
+}
+
+@mixin tablet {
+  @media (max-width: 1024px) {
+    @content;
+  }
+}
+
+@mixin desktop {
+  @media (min-width: 1025px) {
+    @content;
+  }
 }

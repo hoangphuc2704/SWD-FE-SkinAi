@@ -1,53 +1,81 @@
-import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
+import { BrowserRouter as Router, Route, Routes, Navigate, useLocation } from 'react-router-dom';
+import { useEffect } from 'react';
 import '../src/assets/styles/_global.scss';
 import Header from './components/header/Header';
-import Home from './pages/home/Home';
-import AIPage from './pages/aiPage/AIPage';
-import Routine from './pages/routine/Routine';
+import Home from './pages/user/home/Home';
+import AIPage from './pages/user/aiPage/AIPage';
+import Routine from './pages/user/routine/Routine';
 import Footer from './components/footer/Footer';
-import AboutUs from './pages/aboutUs/AboutUs';
-import ChatAi from './pages/chatAi/ChatAi';
-import Login from './pages/login/Login';
+import AboutUs from './pages/user/aboutUs/AboutUs';
+import ChatAi from './pages/user/chatAi/ChatAi';
+import Login from './pages/user/login/Login';
 import Admin from './pages/admin/Admin';
-import BuyProducts from './pages/buyProduc/BuyProducts';
+import BuyProducts from './pages/user/buyProduc/BuyProducts';
+import Profile from './pages/user/profile/Profile';
+
+function ScrollToSection() {
+  const location = useLocation();
+  useEffect(() => {
+    const target = location.state?.scrollTo;
+    if (target) {
+      // Delay to ensure DOM sections are rendered
+      setTimeout(() => {
+        const el = document.getElementById(target);
+        if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }, 0);
+    }
+  }, [location]);
+  return null;
+}
 
 function App() {
   return (
-    <>
-      <Routes>
-        <Route
-          path="/"
-          element={
-            <>
-              <Header />
-              <main>
-                <section id="home">
-                  <Home />
-                </section>
-                <section id="aipage">
-                  <AIPage />
-                </section>
-                <section id="routine">
-                  <Routine />
-                </section>
-                <section id="aboutus">
-                  <AboutUs />
-                </section>
-                <section id="buyproducts">
-                  <BuyProducts />
-                </section>
-              </main>
-              <Footer />
-            </>
-          }
-        />
-      </Routes>
-      <Routes>
-        <Route path="/chatai" element={<ChatAi />} />
-        <Route path="/login" element={<Login />} />
-        <Route path="/admin" element={<Admin />} />
-      </Routes>
-    </>
+    <Routes>
+      <Route
+        path="/"
+        element={
+          <>
+            <ScrollToSection />
+            <Header />
+            <main>
+              <section id="home">
+                <Home />
+              </section>
+              <section id="aipage">
+                <AIPage />
+              </section>
+              <section id="routine">
+                <Routine />
+              </section>
+              <section id="aboutus">
+                <AboutUs />
+              </section>
+              {/* <section id="buyproducts">
+                <BuyProducts />
+              </section> */}
+            </main>
+            <Footer />
+          </>
+        }
+      />
+      {/* Dedicated routine route for deep linking from chat */}
+      <Route
+        path="/routine"
+        element={
+          <>
+            <Header />
+            <main>
+              <Routine />
+            </main>
+            <Footer />
+          </>
+        }
+      />
+      <Route path="/chatai" element={<ChatAi />} />
+      <Route path="/login" element={<Login />} />
+      <Route path="/admin" element={<Admin />} />
+      <Route path="/profile" element={<Profile />} />
+    </Routes>
   );
 }
 

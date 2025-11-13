@@ -1,38 +1,86 @@
-// File này: Contain these classes, styles shared
-// @import url('https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&family=Roboto+Mono:ital,wght@0,100..700;1,100..700&family=Roboto:ital,wght@0,100..900;1,100..900&display=swap');
-body {
-  font-family: var(--font-family);
-  font-size: 1.6rem;
-  line-height: 1.5;
-  text-rendering: optimizeSpeed;
-  color: var(--text-color);
-  overflow-y: scroll;
-  
-}
-html {
-  font-size: 62.5%;
-}
+// ================================
+// 🌿 GLOBAL STYLES
+// ================================
 
+// 🧩 Import Google Fonts
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap');
+
+// ================================
+// 🌈 Root Variables (CSS)
+// ================================
 :root {
-  // --primary: #fe2c55;
   --primary-green: #22c55e;
   --dark-green: #16a34a;
   --dark: #166534;
+  --primary-green-light: #4ade80;
+
+  --danger: #ef4444;
+  --warning: #f59e0b;
+
+  --dark-text: #1f2937;
   --light-gray: #6b7280;
   --white: #ffffff;
-  --dark-text: #1f2937;
-  --shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
-  --transition: all 0.3s ease;
   --background-light: #f8fafc;
   --card-background: #e8f5e8;
-  --primary-green-light: #4ade80;
+
+  --border-color: #e5e7eb;
+  --shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+  --transition: all 0.3s ease;
 }
 
+// ================================
+// 💅 SCSS VARIABLES (for use in modules)
+// ================================
+$primary-color: #22c55e;
+$primary-hover: #16a34a;
+$primary-dark: #166534;
+$primary-light: #4ade80;
+
+$success-color: #10b981;
+$danger-color: #ef4444;
+$warning-color: #f59e0b;
+
+$text-primary: #1f2937;
+$text-secondary: #6b7280;
+
+$bg-primary: #f8fafc;
+$bg-card: #e8f5e8;
+
+$white: #ffffff;
+$border-color: #e5e7eb;
+
+$shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.1);
+$shadow-md: 0 4px 6px rgba(0, 0, 0, 0.1);
+$shadow-lg: 0 10px 25px rgba(0, 0, 0, 0.1);
+
+$transition: all 0.3s ease;
+
+// ================================
+// ⚙️ Global Reset
+// ================================
 * {
   box-sizing: border-box;
-  margin: 0; // clear  default distance outside
+  margin: 0;
   padding: 0;
 }
+
+html {
+  font-size: 62.5%; // 1rem = 10px
+}
+
+body {
+  font-family: 'Poppins', 'Roboto', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  font-size: 1.6rem;
+  color: var(--dark-text);
+  background-color: var(--background-light);
+  text-rendering: optimizeSpeed;
+  overflow-y: scroll;
+}
+
+// ================================
+// 🧭 Elements
+// ================================
 button,
 input,
 [tabindex] {
@@ -41,37 +89,37 @@ input,
 }
 
 a[href] {
-  color: var(--text-color);
+  color: var(--dark-text);
   text-decoration: none;
 }
 
-// Fonts emmbeded
+// ================================
+// 🧱 Fonts Embedded (Local)
+// ================================
 @font-face {
-  font-family: ProximaNova;
+  font-family: 'ProximaNova';
   src: url('/assets/fonts/Proxima-Nova-Regular.woff2');
   font-weight: 400;
 }
-
 @font-face {
-  font-family: ProximaNova;
+  font-family: 'ProximaNova';
   src: url('/assets/fonts/ProximaNova-Semibold.woff2');
   font-weight: 600;
 }
-
 @font-face {
-  font-family: ProximaNova;
+  font-family: 'ProximaNova';
   src: url('/assets/fonts/Proxima-Nova-Bold.woff');
   font-weight: 700;
 }
-
 @font-face {
-  font-family: SofiaPro;
+  font-family: 'SofiaPro';
   src: url('/assets/fonts/sofiapro-bold.woff');
   font-weight: 700;
 }
 
-// scroll bar
-
+// ================================
+// 🎚️ Scrollbar
+// ================================
 body::-webkit-scrollbar {
   width: 8px;
 }

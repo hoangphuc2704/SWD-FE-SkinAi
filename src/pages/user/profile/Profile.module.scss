@@ -1,0 +1,382 @@
+@import '../../../assets/styles/global'; // Import các biến màu global
+
+.profileWrapper {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  width: 100%;
+  padding: 2rem;
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  overflow-y: auto;
+  background-color: $bg-primary;
+}
+
+.profile {
+  max-width: 900px;
+  width: 100%;
+  padding: 4rem 3.5rem;
+  background: $white;
+  border-radius: 16px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+  transition: $transition;
+
+  &:hover {
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.12);
+  }
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 3rem;
+  padding-bottom: 2rem;
+  border-bottom: 3px solid $primary-light;
+  position: relative;
+
+  &::after {
+    content: '';
+    position: absolute;
+    bottom: -3px;
+    left: 0;
+    width: 100px;
+    height: 3px;
+    background: $primary-color;
+    border-radius: 3px;
+  }
+
+  h2 {
+    font-size: 3rem;
+    font-weight: 600;
+    color: $primary-color;
+    font-family: 'Poppins', sans-serif;
+    margin: 0;
+    letter-spacing: -0.5px;
+  }
+}
+
+.header-left {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+}
+
+.btn-group {
+  display: flex;
+  gap: 1rem;
+}
+
+.btn-back,
+.btn-edit,
+.btn-save,
+.btn-cancel {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 1.1rem 2.2rem;
+  border-radius: 10px;
+  font-size: 1.45rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  border: none;
+  font-family: 'Poppins', sans-serif;
+
+  svg {
+    width: 18px;
+    height: 18px;
+    transition: transform 0.3s ease;
+  }
+
+  &:hover svg {
+    transform: scale(1.1);
+  }
+}
+
+.btn-back {
+  background: $primary-color;
+  color: $white;
+
+  &:hover {
+    background: $primary-hover;
+    transform: translateY(-2px);
+    box-shadow: $shadow-md;
+  }
+}
+
+.btn-edit {
+  background: $primary-color;
+  color: $white;
+
+  &:hover {
+    background: $primary-hover;
+    transform: translateY(-2px);
+    box-shadow: $shadow-md;
+  }
+}
+
+.btn-save {
+  background: $success-color;
+  color: $white;
+
+  &:hover:not(:disabled) {
+    background: darken($success-color, 8%);
+    transform: translateY(-2px);
+    box-shadow: $shadow-md;
+  }
+
+  &:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
+}
+
+.btn-cancel {
+  background: $text-secondary;
+  color: $white;
+
+  &:hover:not(:disabled) {
+    background: darken($text-secondary, 8%);
+    transform: translateY(-2px);
+  }
+
+  &:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
+}
+
+.profile-content {
+  display: flex;
+  flex-direction: column;
+  gap: 1.8rem;
+}
+
+.field {
+  display: flex;
+  align-items: center;
+  padding: 1.8rem 2rem;
+  background: $bg-card;
+  border-radius: 12px;
+  border-left: 5px solid $primary-color;
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+
+  &::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0;
+    height: 100%;
+    width: 0;
+    background: linear-gradient(90deg, rgba($primary-color, 0.05) 0%, transparent 100%);
+    transition: width 0.3s ease;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  &:hover {
+    background: lighten($bg-card, 2%);
+    transform: translateX(4px);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+
+    &::before {
+      width: 100%;
+    }
+  }
+
+  label {
+    font-weight: 600;
+    color: $primary-dark;
+    min-width: 160px;
+    font-size: 1.55rem;
+    font-family: 'Poppins', sans-serif;
+    position: relative;
+    z-index: 1;
+  }
+
+  span {
+    color: $text-primary;
+    font-size: 1.55rem;
+    line-height: 1.6;
+    position: relative;
+    z-index: 1;
+
+    &.readonly {
+      opacity: 0.75;
+      font-style: italic;
+    }
+  }
+}
+
+.input,
+select.input {
+  flex: 1;
+  padding: 1.1rem 1.6rem;
+  border: 2px solid $border-color;
+  border-radius: 8px;
+  font-size: 1.55rem;
+  color: $text-primary;
+  background: $white;
+  transition: all 0.3s ease;
+  font-family: inherit;
+  position: relative;
+  z-index: 1;
+
+  &:focus {
+    outline: none;
+    border-color: $primary-color;
+    box-shadow: 0 0 0 4px rgba($primary-color, 0.1);
+    transform: translateY(-1px);
+  }
+
+  &:hover:not(:focus) {
+    border-color: $primary-light;
+    background: rgba($primary-color, 0.02);
+  }
+}
+
+.error-message {
+  padding: 1.4rem 1.8rem;
+  background: lighten($danger-color, 45%);
+  color: $danger-color;
+  border-radius: 10px;
+  margin-bottom: 2rem;
+  font-size: 1.45rem;
+  border-left: 5px solid $danger-color;
+  font-weight: 500;
+  box-shadow: 0 2px 8px rgba($danger-color, 0.1);
+  animation: slideIn 0.3s ease;
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 400px;
+  font-size: 1.8rem;
+  color: $primary-color;
+  font-weight: 500;
+
+  &::after {
+    content: '';
+    width: 24px;
+    height: 24px;
+    margin-left: 1rem;
+    border: 3px solid $primary-light;
+    border-top-color: $primary-color;
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+  }
+}
+
+.error {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 400px;
+  font-size: 1.8rem;
+  color: $danger-color;
+  font-weight: 500;
+  padding: 2rem;
+  text-align: center;
+  background: lighten($danger-color, 45%);
+  border-radius: 8px;
+  margin: 2rem;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+// Responsive
+@media (max-width: 768px) {
+  .profileWrapper {
+    padding: 1rem;
+    min-height: auto;
+  }
+
+  .profile {
+    padding: 2.5rem 2rem;
+  }
+
+  .header {
+    flex-direction: column;
+    gap: 1.5rem;
+    align-items: flex-start;
+
+    h2 {
+      font-size: 2.4rem;
+    }
+  }
+
+  .header-left {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 1rem;
+    width: 100%;
+  }
+
+  .btn-group {
+    width: 100%;
+
+    button {
+      flex: 1;
+    }
+  }
+
+  .field {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.8rem;
+
+    label {
+      min-width: auto;
+    }
+
+    .input,
+    select.input {
+      width: 100%;
+    }
+  }
+}
+
+@media (max-width: 480px) {
+  .profileWrapper {
+    padding: 0.5rem;
+  }
+
+  .profile {
+    padding: 1.5rem;
+  }
+
+  .header h2 {
+    font-size: 2rem;
+  }
+
+  .btn-edit,
+  .btn-save,
+  .btn-cancel {
+    padding: 0.8rem 1.5rem;
+    font-size: 1.3rem;
+  }
+}
