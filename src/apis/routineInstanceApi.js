@@ -60,3 +60,16 @@ export const deleteRoutineInstance = async (id) => {
     throw error;
   }
 };
+
+export const createRoutineInstanceFromTemplate = async (routineId, payload = {}) => {
+  try {
+    const response = await axiosClient.post(
+      `/api/routine-instances/routine/${routineId}/instances`,
+      payload
+    );
+    return response.data;
+  } catch (error) {
+    console.error('Error starting routine from template:', error);
+    throw error;
+  }
+};

@@ -18,6 +18,7 @@ const initialForm = {
 function ManageDocumentChunks() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [ragDisabled, setRagDisabled] = useState(false);
   const [chunks, setChunks] = useState([]);
   const [filterDocId, setFilterDocId] = useState('');
   const [form, setForm] = useState(initialForm);
@@ -44,7 +45,13 @@ function ManageDocumentChunks() {
       const data = await getDocumentChunksByDocumentId(filterDocId);
       setChunks(Array.isArray(data) ? data : data?.items || []);
     } catch (e) {
-      setError(e?.response?.data?.message || e.message || 'Lỗi tải document chunks');
+      const status = e?.response?.status;
+      if (status === 410) {
+        setRagDisabled(true);
+        setError('Tính năng RAG đang tắt. Không thể truy cập Document Chunks.');
+      } else {
+        setError(e?.response?.data?.message || e.message || 'Lỗi tải document chunks');
+      }
     } finally {
       setLoading(false);
     }
@@ -70,7 +77,10 @@ function ManageDocumentChunks() {
         docId: form.docId,
         chunkText: form.chunkText || undefined,
       };
-      await createDocumentChunk(payload);
+      const statusGuard = ragDisabled
+        ? Promise.reject(new Error('RAG đang tắt'))
+        : createDocumentChunk(payload);
+      await statusGuard;
       await load();
       setForm(initialForm);
       alert('Đã tạo chunk');
@@ -98,7 +108,10 @@ function ManageDocumentChunks() {
       const payload = {
         chunkText: form.chunkText || undefined,
       };
-      await updateDocumentChunk(editingId, payload);
+      const statusGuard = ragDisabled
+        ? Promise.reject(new Error('RAG đang tắt'))
+        : updateDocumentChunk(editingId, payload);
+      await statusGuard;
       await load();
       setEditingId('');
       setForm(initialForm);
@@ -115,7 +128,10 @@ function ManageDocumentChunks() {
     setLoading(true);
     setError('');
     try {
-      await deleteDocumentChunk(id);
+      const statusGuard = ragDisabled
+        ? Promise.reject(new Error('RAG đang tắt'))
+        : deleteDocumentChunk(id);
+      await statusGuard;
       await load();
       alert('Đã xóa');
     } catch (e) {
@@ -128,7 +144,7 @@ function ManageDocumentChunks() {
   return (
     <div className={cx('tableCard')}>
       <div className={cx('tableHeader')}>
-        <h3>🧩 Quản lý Document Chunks</h3>
+        <h3> Quản lý Document Chunks</h3>
         <div className={cx('searchBox')}>
           <input
             type="text"
@@ -149,86 +165,90 @@ function ManageDocumentChunks() {
         </div>
       )}
 
-      <div className={cx('tableWrapper')}>
-        <table>
-          <thead>
-            <tr>
-              <th>ID</th>
-              <th>Doc ID</th>
-              <th>Chunk Text</th>
-              <th>Thao tác</th>
-            </tr>
-          </thead>
-          <tbody>
-            {chunks.map((c) => (
-              <tr key={c.id}>
-                <td>{c.id}</td>
-                <td>{c.docId}</td>
-                <td
-                  style={{
-                    maxWidth: 500,
-                    whiteSpace: 'nowrap',
-                    overflow: 'hidden',
-                    textOverflow: 'ellipsis',
-                  }}
-                >
-                  {c.chunkText}
-                </td>
-                <td>
-                  <div className={cx('actions')}>
-                    <button className={cx('edit')} onClick={() => startEdit(c)}>
-                      Sửa
-                    </button>
-                    <button className={cx('delete')} onClick={() => remove(c.id)}>
-                      Xóa
-                    </button>
-                  </div>
-                </td>
+      {!ragDisabled && (
+        <div className={cx('tableWrapper')}>
+          <table>
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>Doc ID</th>
+                <th>Chunk Text</th>
+                <th>Thao tác</th>
               </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
+            </thead>
+            <tbody>
+              {chunks.map((c) => (
+                <tr key={c.id}>
+                  <td>{c.id}</td>
+                  <td>{c.docId}</td>
+                  <td
+                    style={{
+                      maxWidth: 500,
+                      whiteSpace: 'nowrap',
+                      overflow: 'hidden',
+                      textOverflow: 'ellipsis',
+                    }}
+                  >
+                    {c.chunkText}
+                  </td>
+                  <td>
+                    <div className={cx('actions')}>
+                      <button className={cx('edit')} onClick={() => startEdit(c)}>
+                        Sửa
+                      </button>
+                      <button className={cx('delete')} onClick={() => remove(c.id)}>
+                        Xóa
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
 
-      <div style={{ padding: '1.5rem' }}>
-        <h4>{editingId ? 'Cập nhật chunk' : 'Tạo chunk mới'}</h4>
-        <form onSubmit={editingId ? submitUpdate : submitCreate}>
-          <div style={{ display: 'grid', gap: '0.75rem', maxWidth: 800 }}>
-            <input
-              type="text"
-              name="docId"
-              placeholder="Document ID (UUID)"
-              value={form.docId}
-              onChange={onChange}
-              disabled={!!editingId}
-            />
-            <textarea
-              name="chunkText"
-              placeholder="Chunk text"
-              value={form.chunkText}
-              onChange={onChange}
-              rows={3}
-            />
-            <div style={{ display: 'flex', gap: 8 }}>
-              <button type="submit" className={cx('navItem')} style={{ width: 'auto' }}>
-                {editingId ? 'Cập nhật' : 'Tạo mới'}
-              </button>
-              {editingId && (
-                <button
-                  type="button"
-                  className={cx('navItem')}
-                  onClick={() => {
-                    setEditingId('');
-                    setForm(initialForm);
-                  }}
-                >
-                  Hủy
+      {!ragDisabled && (
+        <div style={{ padding: '1.5rem' }}>
+          <h4>{editingId ? 'Cập nhật chunk' : 'Tạo chunk mới'}</h4>
+          <form onSubmit={editingId ? submitUpdate : submitCreate}>
+            <div style={{ display: 'grid', gap: '0.75rem', maxWidth: 800 }}>
+              <input
+                type="text"
+                name="docId"
+                placeholder="Document ID (UUID)"
+                value={form.docId}
+                onChange={onChange}
+                disabled={!!editingId}
+              />
+              <textarea
+                name="chunkText"
+                placeholder="Chunk text"
+                value={form.chunkText}
+                onChange={onChange}
+                rows={3}
+              />
+              <div style={{ display: 'flex', gap: 8 }}>
+                <button type="submit" className={cx('navItem')} style={{ width: 'auto' }}>
+                  {editingId ? 'Cập nhật' : 'Tạo mới'}
                 </button>
-              )}
+                {editingId && (
+                  <button
+                    type="button"
+                    className={cx('navItem')}
+                    onClick={() => {
+                      setEditingId('');
+                      setForm(initialForm);
+                    }}
+                  >
+                    Hủy
+                  </button>
+                )}
+              </div>
             </div>
-          </div>
-        </form>
-      </div>
+          </form>
+        </div>
+      )}
     </div>
   );
 }

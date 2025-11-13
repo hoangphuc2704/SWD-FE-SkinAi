@@ -46,6 +46,7 @@ function ChatInput({ value, onChange, onSend, onImageSelect, disabled }) {
         value={value}
         onChange={onChange}
         onKeyDown={handleKeyDown}
+        disabled={disabled}
       />
       <button className={cx('sendBtn')} onClick={onSend} disabled={disabled}>
         <i className="fa-solid fa-paper-plane"></i>
@@ -55,4 +56,3 @@ function ChatInput({ value, onChange, onSend, onImageSelect, disabled }) {
 }
 
 export default ChatInput;
-

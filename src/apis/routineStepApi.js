@@ -3,7 +3,10 @@ import axiosClient from '../services/axiosClient';
 export const getRoutineStepsByRoutineId = async (routineId) => {
   try {
     const response = await axiosClient.get(`/api/routine-steps/routine/${routineId}`);
-    return response.data;
+    const d = response.data;
+    // Backend returns { success, data: StepDto[] }
+    if (d && Array.isArray(d.data)) return d.data;
+    return d?.data ?? d;
   } catch (error) {
     console.error('Error fetching routine steps:', error);
     throw error;
@@ -23,7 +26,7 @@ export const getAllRoutineSteps = async () => {
 export const getRoutineStepById = async (stepId) => {
   try {
     const response = await axiosClient.get(`/api/routine-steps/${stepId}`);
-    return response.data;
+    return response.data?.data ?? response.data;
   } catch (error) {
     console.error('Error fetching routine step by ID:', error);
     throw error;
@@ -33,7 +36,7 @@ export const getRoutineStepById = async (stepId) => {
 export const createRoutineStep = async (stepData) => {
   try {
     const response = await axiosClient.post('/api/routine-steps', stepData);
-    return response.data;
+    return response.data?.data ?? response.data;
   } catch (error) {
     console.error('Error creating routine step:', error);
     throw error;
@@ -43,7 +46,7 @@ export const createRoutineStep = async (stepData) => {
 export const updateRoutineStep = async (id, stepData) => {
   try {
     const response = await axiosClient.put(`/api/routine-steps/${id}`, stepData);
-    return response.data;
+    return response.data?.data ?? response.data;
   } catch (error) {
     console.error('Error updating routine step:', error);
     throw error;
@@ -53,7 +56,7 @@ export const updateRoutineStep = async (id, stepData) => {
 export const deleteRoutineStep = async (id) => {
   try {
     const response = await axiosClient.delete(`/api/routine-steps/${id}`);
-    return response.data;
+    return response.data?.data ?? response.data;
   } catch (error) {
     console.error('Error deleting routine step:', error);
     throw error;

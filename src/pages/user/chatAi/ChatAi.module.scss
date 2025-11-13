@@ -391,6 +391,12 @@ button {
       transform: translateY(0);
     }
   }
+
+  .readyHint {
+    margin: 0;
+    font-size: 13px;
+    color: #4a4a6a;
+  }
 }
 
 .backBtn {

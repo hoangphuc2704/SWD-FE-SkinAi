@@ -151,14 +151,24 @@ export const deleteChatSession = async (sessionId) => {
 /**
  * 🟢 Tạo tin nhắn trong session
  * Endpoint: POST /api/chat/sessions/{id}/messages
- * Body: { role: 'user' | 'assistant', content: string }
+ * Form fields: Content (optional), Image (file, optional), ImageUrl (optional)
  */
-export const createChatMessage = async (sessionId, messageData) => {
+export const createChatMessage = async (sessionId, { content, imageFile, imageUrl } = {}) => {
   try {
-    const response = await axiosClient.post(
-      `/api/chat/sessions/${sessionId}/messages`,
-      messageData
-    );
+    const form = new FormData();
+    if (content) {
+      form.append('Content', content);
+    }
+    if (imageFile) {
+      form.append('Image', imageFile);
+    }
+    if (imageUrl) {
+      form.append('ImageUrl', imageUrl);
+    }
+
+    const response = await axiosClient.post(`/api/chat/sessions/${sessionId}/messages`, form, {
+      headers: { 'Content-Type': 'multipart/form-data' },
+    });
     return response.data;
   } catch (error) {
     console.warn('❌ Error creating chat message:', error);
@@ -195,7 +205,50 @@ export const getChatMessageById = async (messageId) => {
 };
 
 /**
- * 🟢 Upload ảnh tin nhắn (multipart/form-data)
+ * � Specialist/Admin: danh sách phiên dành cho specialist
+ * Endpoint: GET /api/chat/specialist-sessions?state=waiting_specialist|assigned&mine=true&pageNumber=&pageSize=
+ * Chỉ admin/specialist gọi được.
+ */
+export const getSpecialistSessions = async (params = {}) => {
+  try {
+    const response = await axiosClient.get('/api/chat/specialist-sessions', { params });
+    return response.data?.data ?? response.data;
+  } catch (error) {
+    console.warn('❌ Error fetching specialist sessions:', error);
+    throw error;
+  }
+};
+
+/**
+ * 🟣 Specialist/Admin: claim/assign một session đang chờ
+ * Endpoint: POST /api/chat/sessions/{sessionId}/assignments
+ */
+export const assignSpecialistSession = async (sessionId) => {
+  try {
+    const response = await axiosClient.post(`/api/chat/sessions/${sessionId}/assignments`);
+    return response.data?.data ?? response.data;
+  } catch (error) {
+    console.warn('❌ Error assigning specialist session:', error);
+    throw error;
+  }
+};
+
+/**
+ * 🟣 Đóng session (admin, user owner, hoặc specialist được gán)
+ * Endpoint: POST /api/chat/sessions/{sessionId}/closures
+ */
+export const closeChatSession = async (sessionId) => {
+  try {
+    const response = await axiosClient.post(`/api/chat/sessions/${sessionId}/closures`);
+    return response.data?.data ?? response.data;
+  } catch (error) {
+    console.warn('❌ Error closing chat session:', error);
+    throw error;
+  }
+};
+
+/**
+ * �🟢 Upload ảnh tin nhắn (multipart/form-data)
  * Endpoint: POST /api/chat/sessions/{sessionId}/messages/upload
  */
 export const uploadChatImageMessage = async (sessionId, file, params = {}) => {

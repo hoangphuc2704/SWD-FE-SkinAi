@@ -1,15 +1,14 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import classNames from 'classnames/bind';
 import styles from './ChatAi.module.scss';
 import { useNavigate } from 'react-router-dom';
 import Button from '../../../components/button/Button';
 // import { getProfile } from '../../../apis/userApi';
-import { getRoutinesByUserId, getRoutineById } from '../../../apis/routineApi';
+import { createRoutineInstanceFromTemplate } from '../../../apis/routineInstanceApi';
 
 // Import custom hooks
 import { useChatSession } from './hooks/useChatSession';
 import { useImageAnalysis } from './hooks/useImageAnalysis';
-import { useRoutineCreation } from './hooks/useRoutineCreation';
 
 // Import components
 import ChatMessages from './components/ChatMessages';
@@ -22,7 +21,10 @@ const cx = classNames.bind(styles);
 function ChatAi() {
   const navigate = useNavigate();
   const [inputMessage, setInputMessage] = useState('');
+  const [hasAnalyzedImage, setHasAnalyzedImage] = useState(false);
   const messagesEndRef = useRef(null);
+  const reminderIssuedRef = useRef(false);
+  const reminderTimeoutRef = useRef(null);
 
   // Custom hooks
   const {
@@ -32,27 +34,61 @@ function ChatAi() {
     loading,
     selectedProblem,
     selectedSkinType,
-    setAiAnalysisId,
     sendMessage,
+    sendChatTurn,
     selectProblem,
     selectSkinType,
-    addMessage,
+    appendLocalMessage,
   } = useChatSession();
 
-  const { imagePreview, analyzing, handleImageSelect, removeImage, analyzeImage } =
-    useImageAnalysis({
-      chatSession,
-      selectedProblem,
-      selectedSkinType,
-      setAiAnalysisId,
-      addMessage,
-    });
-
-  const { creating, createSkincareRoutine } = useRoutineCreation({
-    user,
-    chatSession,
-    addMessage,
+  const {
+    imagePreview,
+    analyzing,
+    handleImageSelect: baseHandleImageSelect,
+    removeImage: baseRemoveImage,
+    analyzeImage,
+  } = useImageAnalysis({
+    selectedProblem,
+    selectedSkinType,
+    sendChatTurn,
+    isSessionReady: Boolean(chatSession),
+    onAnalysisComplete: () => setHasAnalyzedImage(true),
+    onPreconditionFailed: (content) => {
+      const message = content?.trim()
+        ? content
+        : 'Bạn vui lòng hoàn thành ba bước: chọn loại da, chọn tình trạng và tải ảnh để tôi phân tích nhé!';
+      appendLocalMessage({
+        role: 'assistant',
+        content: message,
+        timestamp: new Date().toISOString(),
+      });
+    },
   });
+
+  const handleImageSelect = useCallback(
+    (file) => {
+      if (!selectedSkinType || !selectedProblem) {
+        baseHandleImageSelect(file);
+        return;
+      }
+      setHasAnalyzedImage(false);
+      baseHandleImageSelect(file);
+    },
+    [baseHandleImageSelect, selectedProblem, selectedSkinType]
+  );
+
+  const removeImage = useCallback(() => {
+    setHasAnalyzedImage(false);
+    baseRemoveImage();
+  }, [baseRemoveImage]);
+
+  const canSendMessages = Boolean(
+    chatSession && selectedProblem && selectedSkinType && hasAnalyzedImage && !analyzing
+  );
+
+  useEffect(() => {
+    setHasAnalyzedImage(false);
+  }, [selectedProblem, selectedSkinType]);
 
   // Scroll to bottom khi có tin nhắn mới
   const scrollToBottom = () => {
@@ -63,20 +99,47 @@ function ChatAi() {
     scrollToBottom();
   }, [messages]);
 
+  useEffect(
+    () => () => {
+      if (reminderTimeoutRef.current) {
+        clearTimeout(reminderTimeoutRef.current);
+      }
+    },
+    []
+  );
+
   // Handlers
   const handleGoBack = () => {
     navigate(-1);
   };
 
+  const remindOnboardingSteps = useCallback(() => {
+    if (reminderIssuedRef.current) return;
+    reminderIssuedRef.current = true;
+    appendLocalMessage({
+      role: 'assistant',
+      content:
+        'Để tôi hỗ trợ chính xác, bạn hãy hoàn tất: chọn loại da, chọn vấn đề da và gửi ảnh để tôi phân tích nhé! Khi xong, bạn có thể trò chuyện tiếp.',
+      timestamp: new Date().toISOString(),
+    });
+    if (reminderTimeoutRef.current) {
+      clearTimeout(reminderTimeoutRef.current);
+    }
+    reminderTimeoutRef.current = setTimeout(() => {
+      reminderIssuedRef.current = false;
+      reminderTimeoutRef.current = null;
+    }, 4000);
+  }, [appendLocalMessage]);
+
   const handleSendMessage = () => {
+    if (!canSendMessages) {
+      remindOnboardingSteps();
+      return;
+    }
     if (inputMessage.trim()) {
       sendMessage(inputMessage);
       setInputMessage('');
     }
-  };
-
-  const handleCreateRoutine = () => {
-    createSkincareRoutine(selectedProblem, selectedSkinType);
   };
 
   // Handle action buttons inside messages (e.g., create routine decision)
@@ -84,29 +147,70 @@ function ChatAi() {
     // Hỗ trợ id mới 'open-routine' và tương thích ngược với 'create-routine'
     if (actionId === 'open-routine' || actionId === 'create-routine') {
       const preferredRoutineId = message?.meta?.routineId;
-      const preferredUserId = message?.meta?.userId || user?.id;
+      const preferredUserId = message?.meta?.userId || user?.id || user?.userId || user?.UserId;
+      const routineNameFromMessage =
+        message?.meta?.routineName ||
+        message?.meta?.routine?.name ||
+        message?.meta?.name ||
+        message?.meta?.title;
 
-      // Gọi API theo yêu cầu trước khi điều hướng (không gọi /me)
-      if (preferredUserId) {
-        try {
-          await getRoutinesByUserId(preferredUserId);
-        } catch (e) {
-          console.warn('GET /api/routines/user failed:', e?.message || e);
-        }
-      }
-      if (preferredRoutineId) {
-        try {
-          await getRoutineById(preferredRoutineId);
-        } catch (e) {
-          console.warn('GET /api/routines/{id} failed:', e?.message || e);
-        }
+      if (!preferredRoutineId) {
+        appendLocalMessage({
+          role: 'assistant',
+          content:
+            'Xin lỗi, mình không tìm thấy mã routine để tạo lộ trình. Bạn hãy thử gửi lại yêu cầu nhé!',
+          timestamp: new Date().toISOString(),
+        });
+        return;
       }
 
-      // Điều hướng đến trang Routine và để Routine.jsx gọi GET /api/routine-steps/routine/{routineId}
-      navigate('/routine', { state: { routineId: preferredRoutineId, userId: preferredUserId } });
+      try {
+        const startResponse = await createRoutineInstanceFromTemplate(preferredRoutineId);
+        const resultPayload =
+          startResponse?.data !== undefined ? startResponse.data : startResponse || {};
+        const instanceId =
+          resultPayload?.instanceId || resultPayload?.InstanceId || resultPayload?.id;
+
+        appendLocalMessage({
+          role: 'assistant',
+          content:
+            'Mình đã thêm lộ trình vào danh sách routine của bạn. Bạn có thể xem chi tiết và theo dõi tiến trình trong mục Routine nhé!',
+          timestamp: new Date().toISOString(),
+        });
+
+        navigate('/routine', {
+          state: {
+            routineId: preferredRoutineId,
+            instanceId,
+            userId: preferredUserId,
+            scrollToRoutine: true,
+            routineName: routineNameFromMessage,
+          },
+        });
+      } catch (error) {
+        const status = error?.response?.status;
+        if (status === 401) {
+          navigate('/login');
+          return;
+        }
+        let content =
+          'Không thể bắt đầu lộ trình từ routine này vào lúc này. Bạn vui lòng thử lại sau hoặc chọn một routine khác nhé!';
+        if (status === 409) {
+          content =
+            'Bạn đã có routine này trong danh sách rồi, hãy vào mục Routine để xem chi tiết nhé!';
+        } else if (status === 404) {
+          content = 'Routine này hiện không tồn tại nữa. Bạn thử chọn routine khác giúp mình nhé!';
+        }
+        appendLocalMessage({
+          role: 'assistant',
+          content,
+          timestamp: new Date().toISOString(),
+        });
+      }
+      return;
     }
     if (actionId === 'decline-open' || actionId === 'decline-create') {
-      addMessage({
+      appendLocalMessage({
         role: 'assistant',
         content: 'Không sao, bạn có thể tiếp tục trò chuyện hoặc tải ảnh để tôi phân tích nhé!',
         timestamp: new Date().toISOString(),
@@ -135,6 +239,7 @@ function ChatAi() {
           onRemove={removeImage}
           onAnalyze={analyzeImage}
           analyzing={analyzing}
+          disabled={!chatSession || !selectedSkinType || !selectedProblem || loading || analyzing}
         />
 
         <ChatInput
@@ -142,7 +247,7 @@ function ChatAi() {
           onChange={(e) => setInputMessage(e.target.value)}
           onSend={handleSendMessage}
           onImageSelect={handleImageSelect}
-          disabled={loading || analyzing}
+          disabled={loading || analyzing || !canSendMessages}
         />
       </div>
 
@@ -150,10 +255,9 @@ function ChatAi() {
       <ConsultPanel
         selectedProblem={selectedProblem}
         selectedSkinType={selectedSkinType}
+        hasAnalyzedImage={hasAnalyzedImage}
         onProblemSelect={selectProblem}
         onSkinTypeSelect={selectSkinType}
-        onCreateRoutine={handleCreateRoutine}
-        creating={creating}
       />
     </div>
   );

@@ -6,8 +6,8 @@ import Dashboard from './dashboard/Dashboard';
 import ManagePackages from './managePackages/ManagePackages';
 import ManageUsers from './manageUsers/ManageUsers';
 import ManageRoutine from './manageRoutine/ManageRoutine';
+import RoutineExplorer from './manageRoutine/RoutineExplorer';
 import ManageMedicalDocuments from './manageDocuments/ManageMedicalDocuments';
-import ManageDocumentChunks from './manageDocuments/ManageDocumentChunks';
 const cx = classNames.bind(styles);
 
 function Admin() {
@@ -127,14 +127,14 @@ function Admin() {
   ];
 
   const menuItems = [
-    { id: 'dashboard', icon: '📊', label: 'Dashboard' },
-    { id: 'users', icon: '👥', label: 'Người dùng' },
-    { id: 'packages', icon: '🎫', label: 'Gói dịch vụ' },
+    { id: 'dashboard', icon: '', label: 'Dashboard' },
+    { id: 'routineExplorer', icon: '', label: 'Routine templates' },
+    { id: 'documentLibrary', icon: '', label: 'Tài liệu' },
+    { id: 'users', icon: '', label: 'Người dùng' },
+    { id: 'packages', icon: '', label: 'Gói dịch vụ' },
     { id: 'routine', icon: 'X', label: 'Routine' },
-    { id: 'medicalDocs', icon: '📚', label: 'Tài liệu y khoa' },
-    { id: 'docChunks', icon: '🧩', label: 'Document Chunks' },
-    { id: 'analytics', icon: '📈', label: 'Thống kê' },
-    { id: 'settings', icon: '⚙️', label: 'Cài đặt' },
+    // { id: 'analytics', icon: '📈', label: 'Thống kê' },
+    // { id: 'settings', icon: '', label: 'Cài đặt' },
   ];
 
   const renderContent = () => {
@@ -161,12 +161,12 @@ function Admin() {
             setCurrentPagePackages={setCurrentPagePackages}
           />
         );
+      case 'routineExplorer':
+        return <RoutineExplorer />;
+      case 'documentLibrary':
+        return <ManageMedicalDocuments />;
       case 'routine':
         return <ManageRoutine />;
-      case 'medicalDocs':
-        return <ManageMedicalDocuments />;
-      case 'docChunks':
-        return <ManageDocumentChunks />;
       default:
         return null;
     }
@@ -178,7 +178,7 @@ function Admin() {
       <div className={cx('sidebar', { collapsed: sidebarCollapsed })}>
         <div className={cx('sidebarHeader')}>
           <div className={cx('logo')}>
-            <span className={cx('logoIcon')}>🎯</span>
+            <span className={cx('logoIcon')}></span>
             {!sidebarCollapsed && <span className={cx('logoText')}>Admin Panel</span>}
           </div>
           <button
@@ -213,7 +213,7 @@ function Admin() {
       {/* Main Content */}
       <div className={cx('mainContent')}>
         <div className={cx('header')}>
-          <h1>📊 Admin Dashboard</h1>
+          <h1> Admin Dashboard</h1>
           <p>Quản lý người dùng, gói dịch vụ và thống kê hệ thống</p>
         </div>
         {renderContent()}

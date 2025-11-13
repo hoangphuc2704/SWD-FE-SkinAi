@@ -50,9 +50,9 @@ function App() {
               <section id="aboutus">
                 <AboutUs />
               </section>
-              <section id="buyproducts">
+              {/* <section id="buyproducts">
                 <BuyProducts />
-              </section>
+              </section> */}
             </main>
             <Footer />
           </>

@@ -7,7 +7,7 @@ const cx = classNames.bind(styles);
 /**
  * Component hiển thị preview ảnh đã chọn
  */
-function ImagePreview({ imagePreview, onRemove, onAnalyze, analyzing }) {
+function ImagePreview({ imagePreview, onRemove, onAnalyze, analyzing, disabled = false }) {
   if (!imagePreview) return null;
 
   return (
@@ -16,7 +16,7 @@ function ImagePreview({ imagePreview, onRemove, onAnalyze, analyzing }) {
       <button onClick={onRemove} className={cx('removeImage')}>
         <i className="fa-solid fa-times"></i>
       </button>
-      <button onClick={onAnalyze} className={cx('analyzeBtn')} disabled={analyzing}>
+      <button onClick={onAnalyze} className={cx('analyzeBtn')} disabled={analyzing || disabled}>
         {analyzing ? 'Đang phân tích...' : 'Phân tích ảnh'}
       </button>
     </div>
@@ -24,4 +24,3 @@ function ImagePreview({ imagePreview, onRemove, onAnalyze, analyzing }) {
 }
 
 export default ImagePreview;
-

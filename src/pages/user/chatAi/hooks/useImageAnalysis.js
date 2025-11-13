@@ -1,140 +1,78 @@
 import { useState } from 'react';
-import { uploadImageToCloudinary } from '../../../../services/upLoadService';
-import { createChatMessage } from '../../../../apis/chatApi';
-import { submitConsultation } from '../../../../apis/consultationApi';
 
 /**
- * Custom hook để xử lý upload và phân tích ảnh da
+ * Custom hook để xử lý upload và phân tích ảnh da bằng luồng chat AI chính thức
  */
 export const useImageAnalysis = ({
-  chatSession,
+  sendChatTurn,
   selectedProblem,
   selectedSkinType,
-  setAiAnalysisId,
-  addMessage,
+  isSessionReady,
+  onAnalysisComplete,
+  onPreconditionFailed,
 }) => {
   const [selectedImage, setSelectedImage] = useState(null);
   const [imagePreview, setImagePreview] = useState(null);
   const [analyzing, setAnalyzing] = useState(false);
 
-  // Xử lý chọn ảnh
   const handleImageSelect = (file) => {
-    if (file) {
-      setSelectedImage(file);
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setImagePreview(reader.result);
-      };
-      reader.readAsDataURL(file);
+    if (!file) return;
+    if (!selectedSkinType || !selectedProblem) {
+      onPreconditionFailed?.('Bạn cần chọn loại da và tình trạng da trước khi tải ảnh nhé!');
+      return;
     }
+    setSelectedImage(file);
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      setImagePreview(reader.result);
+    };
+    reader.readAsDataURL(file);
   };
 
-  // Xóa ảnh đã chọn
   const removeImage = () => {
     setSelectedImage(null);
     setImagePreview(null);
   };
 
-  // Phân tích ảnh
   const analyzeImage = async () => {
-    if (!selectedImage || !chatSession) return;
+    if (!selectedImage || !sendChatTurn) return;
+    if (!isSessionReady) {
+      console.warn('Chat session is not ready. Skipping image analysis.');
+      return;
+    }
+    if (!selectedSkinType || !selectedProblem) {
+      onPreconditionFailed?.(
+        'Hãy chọn đầy đủ loại da và tình trạng da trước khi gửi ảnh để tôi phân tích nhé!'
+      );
+      return;
+    }
 
     setAnalyzing(true);
-    const isMockSession = chatSession?.id?.startsWith('mock-session-');
+    let sent = false;
     try {
-      // Upload ảnh lên Cloudinary
-      const uploadResult = await uploadImageToCloudinary(selectedImage, 'skin-analysis');
-      const imageUrl = uploadResult.secure_url;
+      const contextParts = [];
+      if (selectedProblem) contextParts.push(`Vấn đề: ${selectedProblem}`);
+      if (selectedSkinType) contextParts.push(`Loại da: ${selectedSkinType}`);
+      const contextText = contextParts.length > 0 ? contextParts.join('. ') : null;
 
-      // Gọi consultation với ImageUrl để phân tích (GenerateRoutine=false)
-      let analysisId = null;
-
-      // Thêm tin nhắn user gửi ảnh
-      const userMsg = {
-        role: 'user',
-        content: 'Đây là ảnh da của tôi',
-        imageUrl: imageUrl,
-        timestamp: new Date().toISOString(),
-      };
-      addMessage(userMsg);
-
-      // Lưu tin nhắn vào database (nếu không mock)
-      if (!isMockSession) {
-        try {
-          await createChatMessage(chatSession.id, {
-            role: 'user',
-            content: 'Đây là ảnh da của tôi',
-            imageUrl: imageUrl,
-          });
-        } catch (e) {
-          console.warn('Skip saving image user message:', e);
-        }
-      }
-
-      try {
-        const result = await submitConsultation({
-          text: `Phân tích ảnh da${selectedProblem ? `, vấn đề: ${selectedProblem}` : ''}${
-            selectedSkinType ? `, loại da: ${selectedSkinType}` : ''
-          }`,
-          imageUrl,
-          generateRoutine: true,
-        });
-        const d = result?.data || {};
-        if (d.analysisId) {
-          analysisId = d.analysisId;
-          setAiAnalysisId(analysisId);
-        }
-
-        const summary = d?.advice?.summary || 'Mình đã phân tích ảnh của bạn.';
-        if (d.routineGenerated && d.routineId) {
-          addMessage({
-            role: 'assistant',
-            content: `${summary}\n\nMình vừa tạo lộ trình chăm sóc da cho bạn. Bạn có muốn xem lộ trình ngay bây giờ không?`,
-            actions: [
-              { id: 'open-routine', label: 'Xem lộ trình' },
-              { id: 'decline-open', label: 'Để sau' },
-            ],
-            meta: { routineId: d.routineId },
-            timestamp: new Date().toISOString(),
-          });
-        } else {
-          addMessage({
-            role: 'assistant',
-            content: summary,
-            timestamp: new Date().toISOString(),
-          });
-        }
-
-        if (!isMockSession) {
-          try {
-            await createChatMessage(chatSession.id, {
-              role: 'assistant',
-              content: summary,
-            });
-          } catch (e) {
-            console.warn('Skip saving assistant image analysis message:', e);
-          }
-        }
-
-        // KHÔNG tự động chuyển trang sau phân tích ảnh.
-      } catch {
-        addMessage({
-          role: 'assistant',
-          content:
-            'Hiện chưa phân tích được ảnh. Bạn có thể thử lại hoặc tiếp tục cung cấp thông tin để tôi tư vấn.',
-          timestamp: new Date().toISOString(),
-        });
-      } finally {
-        setAnalyzing(false);
-      }
-
-      // Reset image
-      removeImage();
+      sent = await sendChatTurn({
+        content: contextText
+          ? `Nhờ bạn phân tích giúp ảnh này. ${contextText}`
+          : 'Nhờ bạn phân tích giúp ảnh này.',
+        imageFile: selectedImage,
+        optimisticImageUrl: imagePreview,
+        fallbackContent: 'Đây là ảnh da của tôi.',
+      });
     } catch (error) {
       console.error('Error analyzing image:', error);
-      // Vẫn kết thúc trạng thái phân tích để UI không bị kẹt
+    } finally {
       setAnalyzing(false);
+      if (sent) {
+        removeImage();
+        onAnalysisComplete?.();
+      }
     }
+    return sent;
   };
 
   return {

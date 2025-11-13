@@ -13,10 +13,9 @@ const cx = classNames.bind(styles);
 function ConsultPanel({
   selectedProblem,
   selectedSkinType,
+  hasAnalyzedImage,
   onProblemSelect,
   onSkinTypeSelect,
-  onCreateRoutine,
-  creating,
 }) {
   return (
     <div className={cx('chatRight')}>
@@ -39,14 +38,16 @@ function ConsultPanel({
           Hãy bắt đầu cuộc trò chuyện với AI tư vấn chăm sóc da bên trái để nhận được lời khuyên cá
           nhân hóa.
         </p>
-        {selectedProblem && selectedSkinType && (
-          <button
-            className={cx('createRoutineBtn')}
-            onClick={onCreateRoutine}
-            disabled={creating}
-          >
-            {creating ? 'Đang tạo...' : 'Tạo lộ trình chăm sóc da'}
-          </button>
+        {selectedProblem && selectedSkinType && !hasAnalyzedImage && (
+          <p className={cx('readyHint')}>
+            Bạn đã cung cấp thông tin nền tảng. Tải hoặc chụp một bức ảnh để tôi phân tích trước rồi
+            mình cùng trao đổi nhé!
+          </p>
+        )}
+        {selectedProblem && selectedSkinType && hasAnalyzedImage && (
+          <p className={cx('readyHint')}>
+            Ảnh đã được phân tích. Giờ thì thoải mái đặt câu hỏi để tôi đề xuất routine phù hợp nhé!
+          </p>
         )}
       </div>
     </div>
@@ -54,4 +55,3 @@ function ConsultPanel({
 }
 
 export default ConsultPanel;
-

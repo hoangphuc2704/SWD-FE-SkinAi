@@ -10,9 +10,9 @@ function RoutineList({ routines = [], selectedRoutineId, onSelect, onEdit, onDel
       {routines?.length ? (
         routines.map((r) => (
           <div
-            key={r.id}
-            className={cx('item', { active: r.id === selectedRoutineId })}
-            onClick={() => onSelect?.(r.id)}
+            key={r.routineId}
+            className={cx('item', { active: r.routineId === selectedRoutineId })}
+            onClick={() => onSelect?.(r.routineId)}
           >
             <div className={cx('itemTitle')}>{r.description || '(Không mô tả)'}</div>
             <div className={cx('itemMeta')}>
@@ -21,7 +21,7 @@ function RoutineList({ routines = [], selectedRoutineId, onSelect, onEdit, onDel
                 className={cx('btn', 'sm')}
                 onClick={(e) => {
                   e.stopPropagation();
-                  onEdit?.(r.id);
+                  onEdit?.(r.routineId);
                 }}
               >
                 Sửa
@@ -30,7 +30,7 @@ function RoutineList({ routines = [], selectedRoutineId, onSelect, onEdit, onDel
                 className={cx('btn', 'danger', 'sm')}
                 onClick={(e) => {
                   e.stopPropagation();
-                  onDelete?.(r.id);
+                  onDelete?.(r.routineId);
                 }}
               >
                 Xóa

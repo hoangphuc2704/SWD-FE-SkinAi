@@ -13,7 +13,7 @@ function StepList({ steps = [], onEdit, onDelete }) {
         .slice()
         .sort((a, b) => (a.stepOrder ?? 0) - (b.stepOrder ?? 0))
         .map((s) => (
-          <div key={s.id} className={cx('item')}>
+          <div key={s.stepId} className={cx('item')}>
             <div className={cx('itemTitle')}>
               <b>#{s.stepOrder}</b> • {s.instruction || '(No instruction)'}
             </div>
@@ -23,7 +23,7 @@ function StepList({ steps = [], onEdit, onDelete }) {
               <button className={cx('btn', 'sm')} onClick={() => onEdit?.(s)}>
                 Sửa
               </button>
-              <button className={cx('btn', 'danger', 'sm')} onClick={() => onDelete?.(s.id)}>
+              <button className={cx('btn', 'danger', 'sm')} onClick={() => onDelete?.(s.stepId)}>
                 Xóa
               </button>
             </div>

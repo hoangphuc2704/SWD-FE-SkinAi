@@ -81,10 +81,10 @@ function AboutUs() {
                 chính xác và dễ hiểu cho mọi loại da.
               </p>
               <ul className={cx('mission-points')}>
-                <li>🎯 Tư vấn chính xác dựa trên phân tích AI</li>
-                <li>🌟 Lộ trình cá nhân hóa cho từng loại da</li>
-                <li>📚 Kiến thức được cập nhật từ chuyên gia</li>
-                <li>💚 An toàn và hiệu quả đã được kiểm chứng</li>
+                <li> Tư vấn chính xác dựa trên phân tích AI</li>
+                <li> Lộ trình cá nhân hóa cho từng loại da</li>
+                <li> Kiến thức được cập nhật từ chuyên gia</li>
+                <li> An toàn và hiệu quả đã được kiểm chứng</li>
               </ul>
             </div>
             <div className={cx('mission-stats')}>

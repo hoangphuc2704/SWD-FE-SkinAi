@@ -61,3 +61,25 @@ export const getUsers = async (pageNumber = 1, pageSize = 10) => {
     throw error;
   }
 };
+
+// Admin: Update user by ID
+export const updateUser = async (id, userData) => {
+  try {
+    const response = await axiosClient.put(`/api/users/${id}`, userData);
+    return response.data?.data ?? response.data;
+  } catch (error) {
+    console.log(error);
+    throw error;
+  }
+};
+
+// Admin: Delete (soft delete) user by ID
+export const deleteUser = async (id) => {
+  try {
+    const response = await axiosClient.delete(`/api/users/${id}`);
+    return response.data?.data ?? response.data;
+  } catch (error) {
+    console.log(error);
+    throw error;
+  }
+};

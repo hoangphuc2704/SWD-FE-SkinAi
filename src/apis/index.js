@@ -20,6 +20,7 @@ export * as feedbackApi from './feedbackApi';
 // 🔹 Giai đoạn 4: Tương tác & Phân tích (AI & Chat)
 export * as chatApi from './chatApi';
 export * as aiApi from './aiApi';
+export * as aiRoutineBuilderApi from './aiRoutineBuilderApi';
 
 // 🔹 Quản lý Dữ liệu Lõi và Hệ thống (Admin & System)
 export * as ruleApi from './ruleApi';

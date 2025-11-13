@@ -51,12 +51,15 @@ Bạn có thể xem chi tiết lộ trình và theo dõi tiến trình tại tra
 Chúc bạn có làn da khỏe đẹp! 💚`,
         timestamp: new Date().toISOString(),
       };
-      addMessage(successMsg);
+      if (typeof addMessage === 'function') {
+        addMessage(successMsg);
+      }
 
-      await createChatMessage(chatSession.id, {
-        role: 'assistant',
-        content: successMsg.content,
-      });
+      if (chatSession?.id) {
+        await createChatMessage(chatSession.id, {
+          content: successMsg.content,
+        });
+      }
 
       // Điều hướng sang trang Routine và chọn đúng lộ trình vừa tạo
       navigate('/routine', { state: { routineId: routineData.data.id } });

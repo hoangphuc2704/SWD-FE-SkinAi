@@ -19,16 +19,57 @@ import RoutineList from './components/RoutineList';
 import RoutineForm from './components/RoutineForm';
 import StepList from './components/StepList';
 import StepForm from './components/StepForm';
+import { DOCUMENT_LIBRARY_EVENT, readDocumentLibrary } from '../../../utils/documentLibrary';
 
 const cx = classNames.bind(styles);
 
 // Helpers
 const initialRoutineForm = {
-  userId: '',
+  userId: '', // ẩn với admin, tự lấy từ token để gán owner cho template
   analysisId: '',
   description: '',
   parentRoutineId: '',
-  status: 'active',
+  targetSkinType: '',
+  targetConditions: '', // cho phép csv "acne; acne scars" hoặc "acne,redness"
+  routineType: 'template',
+  status: 'draft',
+};
+
+const allowedStatuses = ['draft', 'published', 'archived'];
+const normalizeStatus = (status) => {
+  if (!status) return 'draft';
+  const val = status.toString().trim().toLowerCase();
+  if (allowedStatuses.includes(val)) return val;
+  if (val === 'active' || val === 'completed') return 'published';
+  if (val === 'inactive' || val === 'paused') return 'draft';
+  return 'draft';
+};
+
+const normalizeRoutineList = (list) => {
+  const arr = Array.isArray(list) ? list : list?.items || [];
+  return arr.filter((item) => (item?.status || '').toLowerCase() !== 'archived');
+};
+
+const formatBytes = (bytes) => {
+  if (!bytes || Number.isNaN(Number(bytes))) return '';
+  const units = ['B', 'KB', 'MB', 'GB'];
+  let value = Number(bytes);
+  let unitIndex = 0;
+  while (value >= 1024 && unitIndex < units.length - 1) {
+    value /= 1024;
+    unitIndex += 1;
+  }
+  return `${value.toFixed(value >= 10 || unitIndex === 0 ? 0 : 1)} ${units[unitIndex]}`;
+};
+
+const formatDateTime = (value) => {
+  if (!value) return '';
+  try {
+    const date = new Date(value);
+    return date.toLocaleString();
+  } catch {
+    return value;
+  }
 };
 
 const initialStepForm = {
@@ -41,6 +82,7 @@ const initialStepForm = {
 function ManageRoutine() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  // Template mode: không lọc theo user, hiển thị tất cả routines (admin chỉ dùng template)
 
   // Routines
   const [routines, setRoutines] = useState([]);
@@ -52,9 +94,10 @@ function ManageRoutine() {
   const [steps, setSteps] = useState([]);
   const [stepForm, setStepForm] = useState(initialStepForm);
   const [editingStepId, setEditingStepId] = useState('');
+  const [documentLibrary, setDocumentLibrary] = useState(() => readDocumentLibrary());
 
   const selectedRoutine = useMemo(
-    () => routines.find((r) => r.id === selectedRoutineId),
+    () => routines.find((r) => r.routineId === selectedRoutineId),
     [routines, selectedRoutineId]
   );
 
@@ -106,10 +149,18 @@ function ManageRoutine() {
     }
   };
 
-  // Prefill userId from storage/token
+  // Prefill userId từ token (để làm owner của template), ẩn khỏi UI
   useEffect(() => {
     const uid = resolveUserId();
     if (uid) setRoutineForm((prev) => ({ ...prev, userId: uid }));
+  }, []);
+
+  // Sync document library when uploads change elsewhere
+  useEffect(() => {
+    if (typeof window === 'undefined') return undefined;
+    const sync = () => setDocumentLibrary(readDocumentLibrary());
+    window.addEventListener(DOCUMENT_LIBRARY_EVENT, sync);
+    return () => window.removeEventListener(DOCUMENT_LIBRARY_EVENT, sync);
   }, []);
 
   // Load routines
@@ -119,7 +170,9 @@ function ManageRoutine() {
       setError('');
       try {
         const data = await getAllRoutines();
-        setRoutines(Array.isArray(data) ? data : data?.items || []);
+        const list = normalizeRoutineList(data);
+        setRoutines(list);
+        setSelectedRoutineId((prev) => prev || list[0]?.routineId || '');
       } catch (e) {
         setError(e?.response?.data?.message || e.message || 'Lỗi tải routines');
       } finally {
@@ -189,15 +242,23 @@ function ManageRoutine() {
         ...(routineForm.analysisId ? { analysisId: routineForm.analysisId } : {}),
         ...(routineForm.description ? { description: routineForm.description } : {}),
         ...(routineForm.parentRoutineId ? { parentRoutineId: routineForm.parentRoutineId } : {}),
-        status: routineForm.status || 'active',
+        ...(routineForm.targetSkinType ? { targetSkinType: routineForm.targetSkinType } : {}),
+        ...(routineForm.targetConditions ? { targetConditions: routineForm.targetConditions } : {}),
+        routineType: 'template',
+        status: normalizeStatus(routineForm.status),
       };
       const created = await createRoutine(payload);
       // Reload
       const data = await getAllRoutines();
-      setRoutines(Array.isArray(data) ? data : data?.items || []);
-      setRoutineForm(initialRoutineForm);
+      const list = normalizeRoutineList(data);
+      setRoutines(list);
+      setRoutineForm((prev) => ({ ...initialRoutineForm, userId: prev.userId }));
       // auto select created if id present
-      if (created?.id) setSelectedRoutineId(created.id);
+      if (created?.routineId) {
+        setSelectedRoutineId(created.routineId);
+      } else if (list.length) {
+        setSelectedRoutineId(list[0].routineId);
+      }
       alert('Tạo routine thành công');
     } catch (e2) {
       setError(e2?.response?.data?.message || e2.message || 'Lỗi tạo routine');
@@ -209,15 +270,19 @@ function ManageRoutine() {
   const startEditRoutine = async (routineId) => {
     setEditingRoutineId(routineId);
     try {
-      const r = routines.find((x) => x.id === routineId) || (await getRoutineById(routineId));
+      const r =
+        routines.find((x) => x.routineId === routineId) || (await getRoutineById(routineId));
       if (r) {
-        setRoutineForm({
-          userId: r.userId || '',
+        setRoutineForm((prev) => ({
+          userId: prev.userId || r.userId || '',
           analysisId: r.analysisId || '',
           description: r.description || '',
           parentRoutineId: r.parentRoutineId || '',
-          status: r.status || 'active',
-        });
+          targetSkinType: r.targetSkinType || '',
+          targetConditions: r.targetConditions || '',
+          routineType: r.routineType || 'template',
+          status: normalizeStatus(r.status),
+        }));
       }
     } catch (e) {
       setError(e?.response?.data?.message || e.message || 'Không thể load routine');
@@ -232,14 +297,21 @@ function ManageRoutine() {
     try {
       const payload = {
         description: routineForm.description || undefined,
-        status: routineForm.status || undefined,
+        targetSkinType: routineForm.targetSkinType || undefined,
+        targetConditions: routineForm.targetConditions || undefined,
+        routineType: routineForm.routineType || undefined,
+        status: normalizeStatus(routineForm.status),
       };
       await updateRoutine(editingRoutineId, payload);
       const data = await getAllRoutines();
-      setRoutines(Array.isArray(data) ? data : data?.items || []);
+      const list = normalizeRoutineList(data);
+      setRoutines(list);
+      if (!list.find((item) => item.routineId === editingRoutineId)) {
+        setSelectedRoutineId(list[0]?.routineId || '');
+      }
       alert('Cập nhật routine thành công');
       setEditingRoutineId('');
-      setRoutineForm(initialRoutineForm);
+      setRoutineForm((prev) => ({ ...initialRoutineForm, userId: prev.userId }));
     } catch (e2) {
       setError(e2?.response?.data?.message || e2.message || 'Lỗi cập nhật routine');
     } finally {
@@ -253,11 +325,22 @@ function ManageRoutine() {
     setError('');
     try {
       await deleteRoutine(routineId);
-      const data = await getAllRoutines();
-      setRoutines(Array.isArray(data) ? data : data?.items || []);
+      const refreshed = await getAllRoutines();
+      const nextRoutines = normalizeRoutineList(refreshed);
+      setRoutines(nextRoutines);
       if (selectedRoutineId === routineId) {
-        setSelectedRoutineId('');
-        setSteps([]);
+        const fallback = nextRoutines[0]?.routineId || '';
+        setSelectedRoutineId(fallback);
+        if (fallback) {
+          try {
+            const data = await getRoutineStepsByRoutineId(fallback);
+            setSteps(Array.isArray(data) ? data : data?.items || []);
+          } catch {
+            setSteps([]);
+          }
+        } else {
+          setSteps([]);
+        }
       }
       alert('Đã xóa routine');
     } catch (e) {
@@ -299,7 +382,7 @@ function ManageRoutine() {
   };
 
   const startEditStep = (step) => {
-    setEditingStepId(step.id);
+    setEditingStepId(step.stepId);
     setStepForm({
       stepOrder: step.stepOrder ?? 1,
       instruction: step.instruction || '',
@@ -349,6 +432,19 @@ function ManageRoutine() {
     }
   };
 
+  const refreshDocumentLibrary = () => {
+    setDocumentLibrary(readDocumentLibrary());
+  };
+
+  const copyDocumentUrl = async (url) => {
+    try {
+      await navigator.clipboard.writeText(url);
+    } catch (err) {
+      console.error('Copy failed', err);
+      alert('Không thể copy URL, vui lòng copy thủ công.');
+    }
+  };
+
   return (
     <div className={cx('container')}>
       <div className={cx('header')}>
@@ -377,7 +473,7 @@ function ManageRoutine() {
             onSubmitUpdate={submitUpdateRoutine}
             onCancelEdit={() => {
               setEditingRoutineId('');
-              setRoutineForm(initialRoutineForm);
+              setRoutineForm((prev) => ({ ...initialRoutineForm, userId: prev.userId }));
             }}
           />
         </section>
@@ -400,6 +496,58 @@ function ManageRoutine() {
                   setStepForm(initialStepForm);
                 }}
               />
+
+              <div className={cx('docLibrary')}>
+                <div className={cx('docLibraryHeader')}>
+                  <h4>Tài liệu đã upload</h4>
+                  <button
+                    className={cx('btn', 'sm')}
+                    type="button"
+                    onClick={refreshDocumentLibrary}
+                  >
+                    Làm mới
+                  </button>
+                </div>
+                {documentLibrary.length ? (
+                  <div className={cx('docLibraryList')}>
+                    {documentLibrary.map((doc) => (
+                      <div key={doc.id} className={cx('docLibraryItem')}>
+                        <div className={cx('itemTitle')}>
+                          {doc.title || doc.originalFilename || doc.publicId}
+                        </div>
+                        <div className={cx('docLibraryMeta')}>
+                          {doc.originalFilename && <span>{doc.originalFilename}</span>}
+                          {doc.format && <span>{doc.format.toUpperCase()}</span>}
+                          {doc.bytes && <span>{formatBytes(doc.bytes)}</span>}
+                          {doc.uploadedAt && <span>{formatDateTime(doc.uploadedAt)}</span>}
+                        </div>
+                        {doc.note && <div className={cx('docLibraryNote')}>{doc.note}</div>}
+                        <div className={cx('docLibraryActions')}>
+                          <button
+                            type="button"
+                            className={cx('btn', 'sm')}
+                            onClick={() => window.open(doc.url, '_blank')}
+                          >
+                            Xem
+                          </button>
+                          <button
+                            type="button"
+                            className={cx('btn', 'sm')}
+                            onClick={() => copyDocumentUrl(doc.url)}
+                          >
+                            Copy URL
+                          </button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div className={cx('docLibraryEmpty')}>
+                    Chưa có tài liệu nào. Upload tại mục "Thư viện tài liệu" để dùng làm bước
+                    routine.
+                  </div>
+                )}
+              </div>
             </>
           )}
         </section>

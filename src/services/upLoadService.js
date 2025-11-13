@@ -1,10 +1,14 @@
-export async function uploadImageToCloudinary(file, folder = '') {
+const uploadToCloudinary = async (file, { folder = '', resourceType = 'auto' } = {}) => {
   if (!file) throw new Error('No file provided');
 
   const cloudName = import.meta.env.VITE_CLOUDINARY_CLOUD_NAME;
   const uploadPreset = import.meta.env.VITE_CLOUDINARY_UPLOAD_PRESET;
 
-  const url = `https://api.cloudinary.com/v1_1/${cloudName}/image/upload`;
+  if (!cloudName || !uploadPreset) {
+    throw new Error('Missing Cloudinary configuration');
+  }
+
+  const url = `https://api.cloudinary.com/v1_1/${cloudName}/${resourceType}/upload`;
   const formData = new FormData();
 
   formData.append('file', file);
@@ -21,7 +25,11 @@ export async function uploadImageToCloudinary(file, folder = '') {
     throw new Error(errText || 'Cloudinary upload failed');
   }
 
-  const data = await res.json();
-  // data.secure_url là link trả về
-  return data;
-}
+  return res.json();
+};
+
+export const uploadImageToCloudinary = (file, folder = '') =>
+  uploadToCloudinary(file, { folder, resourceType: 'image' });
+
+export const uploadFileToCloudinary = (file, folder = '', resourceType = 'auto') =>
+  uploadToCloudinary(file, { folder, resourceType });

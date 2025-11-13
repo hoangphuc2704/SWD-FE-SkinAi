@@ -242,7 +242,7 @@ function Header() {
               </RouterLink>
             )}
           </li>
-          <li className={cx('nav_item')}>
+          {/* <li className={cx('nav_item')}>
             {location.pathname === '/' ? (
               <ScrollLink
                 to="buyproducts"
@@ -263,7 +263,7 @@ function Header() {
                 Gói Mua Hàng
               </RouterLink>
             )}
-          </li>
+          </li> */}
         </ul>
       </div>
 
