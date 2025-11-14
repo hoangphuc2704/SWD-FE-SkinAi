@@ -23,8 +23,6 @@ function ChatAi() {
   const [inputMessage, setInputMessage] = useState('');
   const [hasAnalyzedImage, setHasAnalyzedImage] = useState(false);
   const messagesEndRef = useRef(null);
-  const reminderIssuedRef = useRef(false);
-  const reminderTimeoutRef = useRef(null);
 
   // Custom hooks
   const {
@@ -82,10 +80,6 @@ function ChatAi() {
     baseRemoveImage();
   }, [baseRemoveImage]);
 
-  const canSendMessages = Boolean(
-    chatSession && selectedProblem && selectedSkinType && hasAnalyzedImage && !analyzing
-  );
-
   useEffect(() => {
     setHasAnalyzedImage(false);
   }, [selectedProblem, selectedSkinType]);
@@ -99,43 +93,12 @@ function ChatAi() {
     scrollToBottom();
   }, [messages]);
 
-  useEffect(
-    () => () => {
-      if (reminderTimeoutRef.current) {
-        clearTimeout(reminderTimeoutRef.current);
-      }
-    },
-    []
-  );
-
   // Handlers
   const handleGoBack = () => {
     navigate(-1);
   };
 
-  const remindOnboardingSteps = useCallback(() => {
-    if (reminderIssuedRef.current) return;
-    reminderIssuedRef.current = true;
-    appendLocalMessage({
-      role: 'assistant',
-      content:
-        'Để tôi hỗ trợ chính xác, bạn hãy hoàn tất: chọn loại da, chọn vấn đề da và gửi ảnh để tôi phân tích nhé! Khi xong, bạn có thể trò chuyện tiếp.',
-      timestamp: new Date().toISOString(),
-    });
-    if (reminderTimeoutRef.current) {
-      clearTimeout(reminderTimeoutRef.current);
-    }
-    reminderTimeoutRef.current = setTimeout(() => {
-      reminderIssuedRef.current = false;
-      reminderTimeoutRef.current = null;
-    }, 4000);
-  }, [appendLocalMessage]);
-
   const handleSendMessage = () => {
-    if (!canSendMessages) {
-      remindOnboardingSteps();
-      return;
-    }
     if (inputMessage.trim()) {
       sendMessage(inputMessage);
       setInputMessage('');
@@ -247,7 +210,7 @@ function ChatAi() {
           onChange={(e) => setInputMessage(e.target.value)}
           onSend={handleSendMessage}
           onImageSelect={handleImageSelect}
-          disabled={loading || analyzing || !canSendMessages}
+          disabled={!chatSession || loading || analyzing}
         />
       </div>
 

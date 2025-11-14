@@ -25,6 +25,15 @@ function ConsultPanel({
       {/* Bắt đầu tư vấn */}
       <div className={cx('consultBox')}>
         <h3>Bắt đầu tư vấn ngay</h3>
+        <div className={cx('consultModes')}>
+          <strong>Bạn có thể chọn một trong hai cách:</strong>
+          <ul>
+            <li>Hoàn thành bộ 3 bước ở dưới để AI có thêm dữ liệu trước khi phân tích ảnh.</li>
+            <li>
+              Mô tả trực tiếp tình trạng da trong cuộc trò chuyện; AI vẫn sẽ gợi ý routine phù hợp.
+            </li>
+          </ul>
+        </div>
         <div className={cx('consultContent')}>
           <ProblemSelector selectedProblem={selectedProblem} onSelect={onProblemSelect} />
           <SkinTypeSelector selectedSkinType={selectedSkinType} onSelect={onSkinTypeSelect} />
@@ -35,13 +44,13 @@ function ConsultPanel({
       <div className={cx('readyBox')}>
         <h4>Bạn đã sẵn sàng?</h4>
         <p>
-          Hãy bắt đầu cuộc trò chuyện với AI tư vấn chăm sóc da bên trái để nhận được lời khuyên cá
-          nhân hóa.
+          Hãy trò chuyện với AI ở bên trái: bạn có thể mô tả tình trạng da hoặc đặt câu hỏi bất kỳ,
+          hệ thống sẽ tự động gợi ý routine tương ứng.
         </p>
         {selectedProblem && selectedSkinType && !hasAnalyzedImage && (
           <p className={cx('readyHint')}>
-            Bạn đã cung cấp thông tin nền tảng. Tải hoặc chụp một bức ảnh để tôi phân tích trước rồi
-            mình cùng trao đổi nhé!
+            Bạn đã cung cấp thông tin nền tảng. Nếu muốn, bạn có thể tải hoặc chụp một bức ảnh để
+            tôi phân tích sâu hơn bất cứ lúc nào trong cuộc trò chuyện.
           </p>
         )}
         {selectedProblem && selectedSkinType && hasAnalyzedImage && (

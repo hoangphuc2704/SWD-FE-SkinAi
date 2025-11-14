@@ -41,7 +41,7 @@ function ChatInput({ value, onChange, onSend, onImageSelect, disabled }) {
       </button>
       <input
         type="text"
-        placeholder="Nhập câu hỏi của bạn..."
+        placeholder="Mô tả tình trạng da hoặc đặt câu hỏi..."
         className={cx('chatInput')}
         value={value}
         onChange={onChange}

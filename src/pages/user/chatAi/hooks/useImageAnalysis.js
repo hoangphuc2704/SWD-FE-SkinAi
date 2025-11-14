@@ -18,7 +18,9 @@ export const useImageAnalysis = ({
   const handleImageSelect = (file) => {
     if (!file) return;
     if (!selectedSkinType || !selectedProblem) {
-      onPreconditionFailed?.('Bạn cần chọn loại da và tình trạng da trước khi tải ảnh nhé!');
+      onPreconditionFailed?.(
+        'Để tôi phân tích ảnh chính xác, bạn hãy chọn loại da và vấn đề chính trước nhé! Bạn vẫn có thể trò chuyện ngay cả khi chưa chọn.'
+      );
       return;
     }
     setSelectedImage(file);
@@ -42,7 +44,7 @@ export const useImageAnalysis = ({
     }
     if (!selectedSkinType || !selectedProblem) {
       onPreconditionFailed?.(
-        'Hãy chọn đầy đủ loại da và tình trạng da trước khi gửi ảnh để tôi phân tích nhé!'
+        'Bạn vui lòng chọn loại da và vấn đề da trước rồi hãy gửi ảnh để tôi hiểu rõ ngữ cảnh phân tích nhé!'
       );
       return;
     }
