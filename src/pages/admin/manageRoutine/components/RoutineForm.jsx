@@ -79,25 +79,54 @@ function RoutineForm({
   };
 
   return (
-    <div className={cx('formCard')}>
-      <h4>{editingRoutineId ? 'Cập nhật Routine' : 'Tạo Routine mới'}</h4>
+    <section className={cx('formCard')} aria-labelledby="routine-form-title">
+      <h4 id="routine-form-title">
+        {editingRoutineId ? 'Cập nhật Routine' : 'Tạo Routine mới'}
+      </h4>
       <form onSubmit={editingRoutineId ? onSubmitUpdate : onSubmitCreate}>
         <div className={cx('formRow')}>
-          <label>Analysis ID (UUID)</label>
-          <input name="analysisId" value={routineForm.analysisId} onChange={onChange} />
+          <label htmlFor="analysisId">Analysis ID (UUID)</label>
+          <input
+            id="analysisId"
+            name="analysisId"
+            type="text"
+            value={routineForm.analysisId}
+            onChange={onChange}
+            placeholder="Nhập Analysis ID (không bắt buộc)"
+          />
         </div>
         <div className={cx('formRow')}>
-          <label>Mô tả</label>
-          <input name="description" value={routineForm.description} onChange={onChange} />
+          <label htmlFor="description">Mô tả *</label>
+          <input
+            id="description"
+            name="description"
+            type="text"
+            value={routineForm.description}
+            onChange={onChange}
+            placeholder="Nhập mô tả routine"
+            required
+          />
         </div>
         <div className={cx('formRow')}>
-          <label>Parent Routine ID (UUID)</label>
-          <input name="parentRoutineId" value={routineForm.parentRoutineId} onChange={onChange} />
+          <label htmlFor="parentRoutineId">Parent Routine ID (UUID)</label>
+          <input
+            id="parentRoutineId"
+            name="parentRoutineId"
+            type="text"
+            value={routineForm.parentRoutineId}
+            onChange={onChange}
+            placeholder="Nhập Parent Routine ID (không bắt buộc)"
+          />
         </div>
         <div className={cx('formRow', 'inline')}>
           <div>
-            <label>Target Skin Type</label>
-            <select name="targetSkinType" value={routineForm.targetSkinType} onChange={onChange}>
+            <label htmlFor="targetSkinType">Loại da mục tiêu</label>
+            <select
+              id="targetSkinType"
+              name="targetSkinType"
+              value={routineForm.targetSkinType}
+              onChange={onChange}
+            >
               {SKIN_TYPE_OPTIONS.map((option) => (
                 <option key={option.value || 'empty'} value={option.value}>
                   {option.label}
@@ -106,13 +135,15 @@ function RoutineForm({
             </select>
           </div>
           <div>
-            <label>Target Conditions</label>
+            <label htmlFor="targetConditions">Tình trạng da mục tiêu</label>
             <select
+              id="targetConditions"
               name="targetConditions"
               multiple
               value={selectedConditions}
               onChange={handleConditionChange}
               size={Math.min(CONDITION_OPTIONS.length, 7)}
+              aria-label="Chọn các tình trạng da mục tiêu"
             >
               <option
                 value={ALL_CONDITIONS_VALUE}
@@ -132,35 +163,42 @@ function RoutineForm({
               ))}
             </select>
             <small>
-              Nhấp "Chọn tất cả" để chọn/bỏ chọn tất cả mục. Hoặc giữ Ctrl (Windows) / Command
-              (macOS) để chọn nhiều mục riêng lẻ.
+              Nhấp "Chọn tất cả" để chọn/bỏ chọn tất cả. Giữ Ctrl (Windows) hoặc Command
+              (macOS) để chọn nhiều mục.
             </small>
           </div>
         </div>
         <div className={cx('formRow')}>
-          <label>Routine Type</label>
-          <input name="routineType" value={routineForm.routineType} disabled />
+          <label htmlFor="routineType">Loại Routine</label>
+          <input
+            id="routineType"
+            name="routineType"
+            type="text"
+            value={routineForm.routineType}
+            disabled
+            aria-readonly="true"
+          />
         </div>
         <div className={cx('formRow')}>
-          <label>Trạng thái</label>
-          <select name="status" value={routineForm.status} onChange={onChange}>
-            <option value="draft">draft</option>
-            <option value="published">published</option>
-            <option value="archived">archived</option>
+          <label htmlFor="status">Trạng thái</label>
+          <select id="status" name="status" value={routineForm.status} onChange={onChange}>
+            <option value="draft">Nháp</option>
+            <option value="published">Đã xuất bản</option>
+            <option value="archived">Đã lưu trữ</option>
           </select>
         </div>
         <div className={cx('actions')}>
           <button className={cx('btn', 'primary')} type="submit">
-            {editingRoutineId ? 'Cập nhật' : 'Tạo mới'}
+            {editingRoutineId ? 'Cập nhật Routine' : 'Tạo Routine mới'}
           </button>
           {editingRoutineId && (
             <button type="button" className={cx('btn')} onClick={onCancelEdit}>
-              Hủy
+              Hủy thao tác
             </button>
           )}
         </div>
       </form>
-    </div>
+    </section>
   );
 }
 

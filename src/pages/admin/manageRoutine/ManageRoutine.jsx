@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { jwtDecode } from 'jwt-decode';
 import classNames from 'classnames/bind';
 import styles from './ManageRoutine.module.scss';
@@ -20,6 +20,7 @@ import RoutineForm from './components/RoutineForm';
 import StepList from './components/StepList';
 import StepForm from './components/StepForm';
 import { DOCUMENT_LIBRARY_EVENT, readDocumentLibrary } from '../../../utils/documentLibrary';
+import AiRoutineGenerator from './components/AiRoutineGenerator';
 
 const cx = classNames.bind(styles);
 
@@ -155,6 +156,31 @@ function ManageRoutine() {
     if (uid) setRoutineForm((prev) => ({ ...prev, userId: uid }));
   }, []);
 
+  const refreshRoutineList = useCallback(async (preferredRoutineId) => {
+    setLoading(true);
+    setError('');
+    try {
+      const data = await getAllRoutines();
+      const list = normalizeRoutineList(data);
+      setRoutines(list);
+      setSelectedRoutineId((prev) => {
+        if (preferredRoutineId && list.some((item) => item.routineId === preferredRoutineId)) {
+          return preferredRoutineId;
+        }
+        if (prev && list.some((item) => item.routineId === prev)) {
+          return prev;
+        }
+        return list[0]?.routineId || '';
+      });
+      return list;
+    } catch (e) {
+      setError(e?.response?.data?.message || e.message || 'Lỗi tải routines');
+      return [];
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
   // Sync document library when uploads change elsewhere
   useEffect(() => {
     if (typeof window === 'undefined') return undefined;
@@ -165,22 +191,8 @@ function ManageRoutine() {
 
   // Load routines
   useEffect(() => {
-    const load = async () => {
-      setLoading(true);
-      setError('');
-      try {
-        const data = await getAllRoutines();
-        const list = normalizeRoutineList(data);
-        setRoutines(list);
-        setSelectedRoutineId((prev) => prev || list[0]?.routineId || '');
-      } catch (e) {
-        setError(e?.response?.data?.message || e.message || 'Lỗi tải routines');
-      } finally {
-        setLoading(false);
-      }
-    };
-    load();
-  }, []);
+    refreshRoutineList();
+  }, [refreshRoutineList]);
 
   // Load steps when routine selected
   useEffect(() => {
@@ -248,17 +260,8 @@ function ManageRoutine() {
         status: normalizeStatus(routineForm.status),
       };
       const created = await createRoutine(payload);
-      // Reload
-      const data = await getAllRoutines();
-      const list = normalizeRoutineList(data);
-      setRoutines(list);
+      await refreshRoutineList(created?.routineId);
       setRoutineForm((prev) => ({ ...initialRoutineForm, userId: prev.userId }));
-      // auto select created if id present
-      if (created?.routineId) {
-        setSelectedRoutineId(created.routineId);
-      } else if (list.length) {
-        setSelectedRoutineId(list[0].routineId);
-      }
       alert('Tạo routine thành công');
     } catch (e2) {
       setError(e2?.response?.data?.message || e2.message || 'Lỗi tạo routine');
@@ -303,12 +306,7 @@ function ManageRoutine() {
         status: normalizeStatus(routineForm.status),
       };
       await updateRoutine(editingRoutineId, payload);
-      const data = await getAllRoutines();
-      const list = normalizeRoutineList(data);
-      setRoutines(list);
-      if (!list.find((item) => item.routineId === editingRoutineId)) {
-        setSelectedRoutineId(list[0]?.routineId || '');
-      }
+      await refreshRoutineList(editingRoutineId);
       alert('Cập nhật routine thành công');
       setEditingRoutineId('');
       setRoutineForm((prev) => ({ ...initialRoutineForm, userId: prev.userId }));
@@ -325,23 +323,8 @@ function ManageRoutine() {
     setError('');
     try {
       await deleteRoutine(routineId);
-      const refreshed = await getAllRoutines();
-      const nextRoutines = normalizeRoutineList(refreshed);
-      setRoutines(nextRoutines);
-      if (selectedRoutineId === routineId) {
-        const fallback = nextRoutines[0]?.routineId || '';
-        setSelectedRoutineId(fallback);
-        if (fallback) {
-          try {
-            const data = await getRoutineStepsByRoutineId(fallback);
-            setSteps(Array.isArray(data) ? data : data?.items || []);
-          } catch {
-            setSteps([]);
-          }
-        } else {
-          setSteps([]);
-        }
-      }
+      await refreshRoutineList();
+      setSteps([]);
       alert('Đã xóa routine');
     } catch (e) {
       setError(e?.response?.data?.message || e.message || 'Lỗi xóa routine');
@@ -445,18 +428,43 @@ function ManageRoutine() {
     }
   };
 
-  return (
-    <div className={cx('container')}>
-      <div className={cx('header')}>
-        <h2>Quản lý Routine</h2>
-      </div>
+  const handleAiGenerated = async (routineId) => {
+    if (routineId) {
+      await refreshRoutineList(routineId);
+    } else {
+      await refreshRoutineList();
+    }
+    setSteps([]);
+    setEditingRoutineId('');
+    setRoutineForm((prev) => ({ ...initialRoutineForm, userId: prev.userId }));
+    setStepForm(initialStepForm);
+  };
 
-      {error && <div className={cx('error')}>{error}</div>}
-      {loading && <div className={cx('loading')}>Đang xử lý...</div>}
+  return (
+    <main className={cx('container')}>
+      <header className={cx('header')}>
+        <h1>Quản lý Routine Templates</h1>
+        <p>Tạo và quản lý các routine chăm sóc da cho hệ thống</p>
+      </header>
+
+      {error && (
+        <div className={cx('error')} role="alert" aria-live="polite">
+          {error}
+        </div>
+      )}
+      {loading && (
+        <div className={cx('loading')} role="status" aria-live="polite">
+          Đang xử lý...
+        </div>
+      )}
 
       <div className={cx('grid')}>
-        <section className={cx('panel')}>
-          <h3>Danh sách Routines</h3>
+        <section className={cx('panel', 'aiPanel')} aria-labelledby="ai-generator-title">
+          <AiRoutineGenerator onSuccess={handleAiGenerated} />
+        </section>
+
+        <section className={cx('panel')} aria-labelledby="routines-section-title">
+          <h3 id="routines-section-title">Danh sách Routines</h3>
           <RoutineList
             routines={routines}
             selectedRoutineId={selectedRoutineId}
@@ -478,10 +486,11 @@ function ManageRoutine() {
           />
         </section>
 
-        <section className={cx('panel')}>
-          <h3>Steps của Routine</h3>
-          {!selectedRoutine && <div>Chọn một routine để quản lý steps.</div>}
-          {selectedRoutine && (
+        <section className={cx('panel')} aria-labelledby="steps-section-title">
+          <h3 id="steps-section-title">Steps của Routine</h3>
+          {!selectedRoutine ? (
+            <p className={cx('aiEmpty')}>Chọn một routine để quản lý các bước.</p>
+          ) : (
             <>
               <StepList steps={steps} onEdit={startEditStep} onDelete={removeStep} />
 
@@ -497,21 +506,22 @@ function ManageRoutine() {
                 }}
               />
 
-              <div className={cx('docLibrary')}>
+              <aside className={cx('docLibrary')} aria-labelledby="doc-library-title">
                 <div className={cx('docLibraryHeader')}>
-                  <h4>Tài liệu đã upload</h4>
+                  <h4 id="doc-library-title">Tài liệu đã upload</h4>
                   <button
                     className={cx('btn', 'sm')}
                     type="button"
                     onClick={refreshDocumentLibrary}
+                    aria-label="Làm mới danh sách tài liệu"
                   >
                     Làm mới
                   </button>
                 </div>
                 {documentLibrary.length ? (
-                  <div className={cx('docLibraryList')}>
+                  <ul className={cx('docLibraryList')} role="list">
                     {documentLibrary.map((doc) => (
-                      <div key={doc.id} className={cx('docLibraryItem')}>
+                      <li key={doc.id} className={cx('docLibraryItem')}>
                         <div className={cx('itemTitle')}>
                           {doc.title || doc.originalFilename || doc.publicId}
                         </div>
@@ -527,6 +537,7 @@ function ManageRoutine() {
                             type="button"
                             className={cx('btn', 'sm')}
                             onClick={() => window.open(doc.url, '_blank')}
+                            aria-label={`Xem tài liệu ${doc.title || doc.originalFilename}`}
                           >
                             Xem
                           </button>
@@ -534,25 +545,25 @@ function ManageRoutine() {
                             type="button"
                             className={cx('btn', 'sm')}
                             onClick={() => copyDocumentUrl(doc.url)}
+                            aria-label={`Copy URL của ${doc.title || doc.originalFilename}`}
                           >
                             Copy URL
                           </button>
                         </div>
-                      </div>
+                      </li>
                     ))}
-                  </div>
+                  </ul>
                 ) : (
-                  <div className={cx('docLibraryEmpty')}>
-                    Chưa có tài liệu nào. Upload tại mục "Thư viện tài liệu" để dùng làm bước
-                    routine.
-                  </div>
+                  <p className={cx('docLibraryEmpty')}>
+                    Chưa có tài liệu nào. Upload tại mục "Thư viện tài liệu" để sử dụng.
+                  </p>
                 )}
-              </div>
+              </aside>
             </>
           )}
         </section>
       </div>
-    </div>
+    </main>
   );
 }
 

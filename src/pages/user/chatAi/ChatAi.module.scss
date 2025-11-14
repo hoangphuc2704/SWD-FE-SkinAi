@@ -295,6 +295,32 @@
   }
 }
 
+.consultModes {
+  background: #f7f8ff;
+  border-radius: 10px;
+  padding: 12px 16px;
+  margin-bottom: 18px;
+  color: #47516b;
+  font-size: 14px;
+  line-height: 1.5;
+
+  strong {
+    display: block;
+    margin-bottom: 8px;
+    color: #394077;
+  }
+
+  ul {
+    list-style: disc;
+    margin: 0 0 0 18px;
+    padding: 0;
+
+    li {
+      margin-bottom: 6px;
+    }
+  }
+}
+
 // .consultContent {
 //   display: flex;
 //   justify-content: center;

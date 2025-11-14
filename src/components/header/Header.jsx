@@ -112,7 +112,7 @@ import styles from './Header.module.scss';
 import images from '../../assets/images';
 import Button from '../button/Button';
 import { Link as ScrollLink } from 'react-scroll';
-import { Link as RouterLink, useLocation } from 'react-router-dom';
+import { Link as RouterLink, useLocation, useNavigate } from 'react-router-dom';
 
 const cx = classNames.bind(styles);
 
@@ -120,6 +120,7 @@ function Header() {
   const [isOpen, setIsOpen] = useState(false);
   const [user, setUser] = useState(null);
   const location = useLocation();
+  const navigate = useNavigate();
 
   useEffect(() => {
     const storedUser = localStorage.getItem('user');
@@ -135,7 +136,7 @@ function Header() {
     localStorage.removeItem('user');
     localStorage.removeItem('accessToken');
     setUser(null);
-    window.location.href = '/login';
+    navigate('/login', { replace: true });
   };
 
   return (

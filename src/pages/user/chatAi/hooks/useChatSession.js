@@ -120,7 +120,7 @@ export const useChatSession = () => {
           {
             role: 'assistant',
             content:
-              'Xin chào! Để tôi tư vấn chính xác nhất, bạn vui lòng hoàn thành 3 bước đầu tiên:\n1️⃣ Chọn loại da của bạn.\n2️⃣ Chọn vấn đề da đang gặp phải.\n3️⃣ Tải một bức ảnh rõ nét về vùng da đó để tôi phân tích.\nSau khi phân tích xong, bạn có thể trò chuyện và nhận routine phù hợp nhé! 😊',
+              'Xin chào! Bạn có thể mô tả tình trạng da hoặc mục tiêu chăm sóc ngay, tôi sẽ phân tích và gợi ý routine phù hợp. Nếu muốn kết quả chính xác hơn, hãy chọn loại da, chọn vấn đề da và tải ảnh để tôi xem thêm bất cứ lúc nào nhé! 😊',
             timestamp: new Date().toISOString(),
           },
         ]);
