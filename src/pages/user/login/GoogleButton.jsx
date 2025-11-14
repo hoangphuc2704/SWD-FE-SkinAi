@@ -3,7 +3,9 @@ import { GoogleLogin } from '@react-oauth/google';
 import { jwtDecode } from 'jwt-decode';
 import authApi from '../../../apis/authAPi';
 import { message } from 'antd';
+import { useNavigate } from 'react-router-dom';
 function GoogleButton(props, ref) {
+  const navigate = useNavigate();
   useImperativeHandle(ref, () => ({
     triggerLogin() {
       const btn = document.querySelector("div[role='button']");
@@ -49,12 +51,9 @@ function GoogleButton(props, ref) {
       message.success('Đăng nhập thành công');
 
       setTimeout(() => {
-        if (user.roleName?.toLowerCase() === 'admin') {
-          window.location.href = '/admin';
-        } else {
-          window.location.href = '/';
-        }
-      }, 3000);
+        const isAdmin = user.roleName?.toLowerCase() === 'admin';
+        navigate(isAdmin ? '/admin' : '/', { replace: true });
+      }, 1000);
     } catch (err) {
       console.error('Google login error:', err);
       message.error(err.message || 'Đăng nhập thất bại!');
